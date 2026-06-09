@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🏓 Pickleball League Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<!-- Firebase -->
+<script type="module" id="firebase-init">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ─── THAY FIREBASE CONFIG CỦA BẠN VÀO ĐÂY ───────────────────────────────────
+  const firebaseConfig = {
+    apiKey: "AIzaSyB8nOFyKNikVABnqYZ97kStOsQepVhzXB8",
+    authDomain: "pickleball-league-18624.firebaseapp.com",
+    databaseURL: "https://pickleball-league-18624-default-rtdb.firebaseio.com",
+    projectId: "pickleball-league-18624",
+    storageBucket: "pickleball-league-18624.firebasestorage.app",
+    messagingSenderId: "136286431509",
+    appId: "1:136286431509:web:f33687b2d50b65a373a11c"
+  };
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  window.__firebaseDB = db;
+  window.__firebaseRef = ref;
+  window.__firebaseSet = set;
+  window.__firebaseOnValue = onValue;
+  window.__firebaseReady = true;
+  window.dispatchEvent(new Event("firebase-ready"));
+</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+  input[type=number]{-moz-appearance:textfield}
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-track{background:#f1f5f9}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useCallback,useRef}=React;
+
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const TEAM_COLORS={
+  1:{color:"#f97316",light:"#fff7ed"},
+  2:{color:"#3b82f6",light:"#eff6ff"},
+  3:{color:"#10b981",light:"#f0fdf4"},
+};
+const DEFAULT_TEAMS={
+  1:{name:"Đội 1",...TEAM_COLORS[1],members:{male:["Linh","Vượng"],female:["Linh Hương"]}},
+  2:{name:"Đội 2",...TEAM_COLORS[2],members:{male:["Long","Hoàn"],female:["L.Hương Vân"]}},
+  3:{name:"Đội 3",...TEAM_COLORS[3],members:{male:["Tuấn","Huy"],female:["Trang Yến"]}},
+};
+const ROUND_PAIRINGS=[
+  {team_a:1,team_b:2},
+  {team_a:2,team_b:3},
+  {team_a:3,team_b:1},
+];
+const TYPE_META={
+  DOI_NAM:  {label:"Đôi Nam",   icon:"♂♂",color:"#3b82f6"},
+  DOI_NU:   {label:"Đôi Nữ",   icon:"♀♀",color:"#ec4899"},
+  NAM_NU_L1:{label:"Nam Nữ L1",icon:"♂♀",color:"#8b5cf6"},
+  NAM_NU_L2:{label:"Nam Nữ L2",icon:"♀♂",color:"#f59e0b"},
+};
+const TYPE_KEYS=Object.keys(TYPE_META);
+const VONG1=[
+  {type:"DOI_NU",   pair:0,score_a:13,score_b:12,players_a:["Linh Hương"],        players_b:["L.Hương Vân"]},
+  {type:"DOI_NU",   pair:1,score_a:3, score_b:11,players_a:["L.Hương Vân"],        players_b:["Trang Yến"]},
+  {type:"DOI_NU",   pair:2,score_a:11,score_b:3, players_a:["Trang Yến"],          players_b:["Linh Hương"]},
+  {type:"DOI_NAM",  pair:0,score_a:8, score_b:11,players_a:["Vượng","Linh"],       players_b:["Hoàn","Long"]},
+  {type:"DOI_NAM",  pair:1,score_a:11,score_b:4, players_a:["Hoàn","Long"],        players_b:["Tuấn","Huy"]},
+  {type:"DOI_NAM",  pair:2,score_a:3, score_b:11,players_a:["Tuấn","Huy"],         players_b:["Linh"]},
+  {type:"NAM_NU_L1",pair:0,score_a:11,score_b:8, players_a:["Linh","Vượng"],       players_b:["Long","L.Hương Vân"]},
+  {type:"NAM_NU_L1",pair:1,score_a:11,score_b:9, players_a:["Long","Hoàn"],        players_b:["Tuấn","Trang Yến"]},
+  {type:"NAM_NU_L1",pair:2,score_a:11,score_b:1, players_a:["Huy","Trang Yến"],    players_b:["Vượng","Linh Hương"]},
+  {type:"NAM_NU_L2",pair:0,score_a:10,score_b:12,players_a:["Vượng","Linh Hương"], players_b:["Long","L.Hương Vân"]},
+  {type:"NAM_NU_L2",pair:1,score_a:12,score_b:10,players_a:["Hoàn","L.Hương Vân"], players_b:["Tuấn","Trang Yến"]},
+  {type:"NAM_NU_L2",pair:2,score_a:11,score_b:9, players_a:["Huy","Trang Yến"],    players_b:["Vượng","Linh Hương"]},
+];
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function makeRounds(){
+  return Array.from({length:18},(_,i)=>({
+    round:i+1,
+    matches:Object.fromEntries(TYPE_KEYS.map(k=>[k,
+      ROUND_PAIRINGS.map(p=>({...p,score_a:"",score_b:"",players_a:[],players_b:[]}))
+    ]))
+  }));
+}
+function buildDefaultRounds(){
+  const r=makeRounds();
+  VONG1.forEach(v=>{
+    r[0].matches[v.type][v.pair]={...r[0].matches[v.type][v.pair],
+      score_a:v.score_a,score_b:v.score_b,players_a:v.players_a,players_b:v.players_b};
+  });
+  return r;
+}
+function getWinner(m){
+  if(m.score_a===""||m.score_b==="")return null;
+  const a=Number(m.score_a),b=Number(m.score_b);
+  if(a>b)return String(m.team_a);if(b>a)return String(m.team_b);return 0;
+}
+function calcStats(rounds,teams){
+  const ts={"1":{pts:0,w:0,l:0},"2":{pts:0,w:0,l:0},"3":{pts:0,w:0,l:0}};
+  const mw={};   // member wins
+  const mp={};   // member played (total matches)
+  rounds.forEach(round=>TYPE_KEYS.forEach(tk=>round.matches[tk].forEach(m=>{
+    const w=getWinner(m);if(w===null)return;
+    // count played for all participants
+    [...(m.players_a||[]),...(m.players_b||[])].forEach(n=>{if(n){mp[n]=(mp[n]||0)+1;}});
+    if(w!==0){
+      const ws=String(w);
+      const ls=String(ws===String(m.team_a)?m.team_b:m.team_a);
+      ts[ws].pts+=2;ts[ws].w++;ts[ls].l++;
+      const winPlayers=ws===String(m.team_a)?m.players_a:m.players_b;
+      winPlayers.forEach(n=>{if(n)mw[n]=(mw[n]||0)+1;});
+    }
+  })));
+  return{teamStats:ts,memberWins:mw,memberPlayed:mp};
+}
+function isRoundDone(r){
+  return TYPE_KEYS.every(tk=>r.matches[tk].every(m=>m.score_a!==""&&m.score_b!==""));
+}
+
+// ─── FIREBASE HOOK ────────────────────────────────────────────────────────────
+function useFirebaseData(teamsDefault,roundsDefault){
+  const [teams,setTeamsState]=useState(teamsDefault);
+  const [rounds,setRoundsState]=useState(roundsDefault);
+  const [synced,setSynced]=useState(false);
+  const [online,setOnline]=useState(false);
+  const skipRef=useRef(false);
+
+  useEffect(()=>{
+    const init=()=>{
+      if(!window.__firebaseReady)return;
+      const db=window.__firebaseDB;
+      const fbRef=window.__firebaseRef;
+      const onValue=window.__firebaseOnValue;
+      setOnline(true);
+
+      // Listen teams
+      onValue(fbRef(db,"teams"),(snap)=>{
+        if(skipRef.current)return;
+        const val=snap.val();
+        if(val)setTeamsState(val);
+      });
+      // Listen rounds
+      onValue(fbRef(db,"rounds"),(snap)=>{
+        if(skipRef.current)return;
+        const val=snap.val();
+        if(val){
+          setRoundsState(val);
+        } else {
+          // No data in Firebase yet — write defaults
+          skipRef.current=true;
+          window.__firebaseSet(fbRef(db,"rounds"),roundsDefault)
+            .finally(()=>{skipRef.current=false;});
+          window.__firebaseSet(fbRef(db,"teams"),teamsDefault)
+            .finally(()=>{});
+        }
+        setSynced(true);
+      });
+    };
+    if(window.__firebaseReady)init();
+    else window.addEventListener("firebase-ready",init);
+    return()=>window.removeEventListener("firebase-ready",init);
+  },[]);
+
+  const setTeams=useCallback((updater)=>{
+    setTeamsState(prev=>{
+      const next=typeof updater==="function"?updater(prev):updater;
+      if(window.__firebaseReady){
+        skipRef.current=true;
+        window.__firebaseSet(window.__firebaseRef(window.__firebaseDB,"teams"),next)
+          .finally(()=>{skipRef.current=false;});
+      }
+      return next;
+    });
+  },[]);
+
+  const setRounds=useCallback((updater)=>{
+    setRoundsState(prev=>{
+      const next=typeof updater==="function"?updater(prev):updater;
+      if(window.__firebaseReady){
+        skipRef.current=true;
+        window.__firebaseSet(window.__firebaseRef(window.__firebaseDB,"rounds"),next)
+          .finally(()=>{skipRef.current=false;});
+      }
+      return next;
+    });
+  },[]);
+
+  return{teams,setTeams,rounds,setRounds,synced,online};
+}
+
+// ─── PLAYER SELECTOR ──────────────────────────────────────────────────────────
+function PlayerSelector({teamId,teams,selected,onChange}){
+  const team=teams[teamId];
+  const pool=[
+    ...team.members.male.map(n=>({n,g:"male"})),
+    ...team.members.female.map(n=>({n,g:"female"})),
+  ];
+  const toggle=n=>{
+    if(selected.includes(n))onChange(selected.filter(x=>x!==n));
+    else if(selected.length>=2)onChange([selected[1],n]);
+    else onChange([...selected,n]);
+  };
+  return(
+    <div style={{display:"flex",flexWrap:"wrap",gap:4,justifyContent:"center"}}>
+      {pool.map(({n,g})=>{
+        const on=selected.includes(n);
+        return(
+          <button key={n} onClick={()=>toggle(n)} style={{
+            padding:"4px 10px",borderRadius:20,fontSize:11,fontWeight:700,
+            border:`1.5px solid ${on?team.color:"#e2e8f0"}`,
+            background:on?team.color:"white",color:on?"white":"#64748b",
+            cursor:"pointer",whiteSpace:"nowrap",transition:"all .12s",
+          }}>
+            <span style={{opacity:.65,fontSize:9,marginRight:2}}>{g==="male"?"♂":"♀"}</span>{n}
+          </button>
+        );
+      })}
+      {pool.length===0&&<span style={{fontSize:10,color:"#94a3b8"}}>Chưa có thành viên</span>}
+    </div>
+  );
+}
+
+// ─── MATCH CARD ───────────────────────────────────────────────────────────────
+function MatchCard({match,roundIdx,typeKey,pairIdx,teams,onChange}){
+  const w=getWinner(match);
+  const aW=w===String(match.team_a),bW=w===String(match.team_b);
+  const tA=teams[match.team_a],tB=teams[match.team_b];
+  const set=(f,v)=>onChange(roundIdx,typeKey,pairIdx,f,v);
+  return(
+    <div style={{background:w!==null?"#f8fafc":"white",borderRadius:12,border:"1.5px solid #e2e8f0",marginBottom:10,overflow:"hidden"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+        padding:"5px 12px",background:w!==null?(w===0?"#fef9c3":"#f0fdf4"):"#f8fafc",
+        borderBottom:"1px solid #e2e8f0",fontSize:11,fontWeight:700}}>
+        <span style={{color:tA.color}}>{tA.name}</span>
+        <span style={{color:w!==null?(w===0?"#b45309":"#16a34a"):"#94a3b8",fontSize:10}}>
+          {w!==null?(w===0?"⚖ Hòa":`🏆 ${teams[w].name} thắng`):"Chưa nhập kết quả"}
+        </span>
+        <span style={{color:tB.color}}>{tB.name}</span>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",borderBottom:"1px solid #f1f5f9"}}>
+        <div style={{padding:"8px 8px 6px",borderRight:"1px solid #f1f5f9"}}>
+          <PlayerSelector teamId={match.team_a} teams={teams} selected={match.players_a||[]}
+            onChange={v=>set("players_a",v)}/>
+          {(match.players_a||[]).length>0&&
+            <div style={{textAlign:"center",marginTop:3,fontSize:10,color:tA.color,fontWeight:600}}>
+              {match.players_a.join(" & ")}
+            </div>}
+        </div>
+        <div style={{padding:"8px 8px 6px"}}>
+          <PlayerSelector teamId={match.team_b} teams={teams} selected={match.players_b||[]}
+            onChange={v=>set("players_b",v)}/>
+          {(match.players_b||[]).length>0&&
+            <div style={{textAlign:"center",marginTop:3,fontSize:10,color:tB.color,fontWeight:600}}>
+              {match.players_b.join(" & ")}
+            </div>}
+        </div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"10px 12px"}}>
+        <input type="number" min="0" value={match.score_a} onChange={e=>set("score_a",e.target.value)}
+          style={{width:70,height:46,textAlign:"center",fontSize:24,fontWeight:900,
+            border:`2px solid ${aW?tA.color:"#e2e8f0"}`,borderRadius:10,outline:"none",
+            color:aW?tA.color:"#94a3b8",background:aW?tA.light:"white"}}/>
+        <div style={{fontSize:18,color:"#cbd5e1",fontWeight:900}}>:</div>
+        <input type="number" min="0" value={match.score_b} onChange={e=>set("score_b",e.target.value)}
+          style={{width:70,height:46,textAlign:"center",fontSize:24,fontWeight:900,
+            border:`2px solid ${bW?tB.color:"#e2e8f0"}`,borderRadius:10,outline:"none",
+            color:bW?tB.color:"#94a3b8",background:bW?tB.light:"white"}}/>
+      </div>
+    </div>
+  );
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+function Dashboard({stats,teams,rounds}){
+  const sorted=Object.entries(stats.teamStats).sort((a,b)=>b[1].pts-a[1].pts);
+  const mems=Object.entries(stats.memberWins).sort((a,b)=>b[1]-a[1]);
+  const mp=stats.memberPlayed||{};
+  const maxPts=sorted[0]?.[1].pts||1;
+  const maxW=mems[0]?.[1]||1;
+  const medals=["🥇","🥈","🥉"];
+
+  const typeWins={};
+  TYPE_KEYS.forEach(tk=>{typeWins[tk]={"1":0,"2":0,"3":0};});
+  rounds.forEach(r=>TYPE_KEYS.forEach(tk=>r.matches[tk].forEach(m=>{
+    const w=getWinner(m);if(w&&w!==0)typeWins[tk][String(w)]++;
+  })));
+
+  // Điểm từng vòng cho mỗi đội
+  const ptsPerRound=rounds.map(r=>{
+    const rp={"1":0,"2":0,"3":0};
+    TYPE_KEYS.forEach(tk=>r.matches[tk].forEach(m=>{
+      const w=getWinner(m);if(w&&w!==0)rp[String(w)]+=2;
+    }));
+    return rp;
+  });
+  const playedRounds=rounds.map(r=>TYPE_KEYS.some(tk=>r.matches[tk].some(m=>m.score_a!=="")));
+  const [showRoundPts,setShowRoundPts]=useState(false);
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:14}}>
+      <div style={{background:"white",borderRadius:16,padding:18,boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+          <div style={{fontWeight:900,fontSize:13,color:"#1e293b",letterSpacing:.3}}>🏆 BẢNG XẾP HẠNG</div>
+          <button onClick={()=>setShowRoundPts(p=>!p)} style={{
+            fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,cursor:"pointer",
+            border:"1.5px solid #e2e8f0",background:showRoundPts?"#1e293b":"white",
+            color:showRoundPts?"white":"#64748b",transition:"all .15s"
+          }}>{showRoundPts?"Ẩn vòng":"Xem từng vòng"}</button>
+        </div>
+        {sorted.map(([tid,s],i)=>{
+          const t=teams[tid];const pct=maxPts>0?(s.pts/maxPts)*100:0;
+          return(
+            <div key={tid} style={{marginBottom:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+                <div style={{display:"flex",alignItems:"center",gap:7}}>
+                  <span style={{fontSize:17}}>{medals[i]}</span>
+                  <span style={{fontWeight:800,fontSize:14,color:t.color}}>{t.name}</span>
+                  <span style={{fontSize:10,color:"#94a3b8",background:"#f1f5f9",borderRadius:6,padding:"1px 7px"}}>{s.w}T · {s.l}B</span>
+                </div>
+                <span style={{fontWeight:900,fontSize:20,color:t.color}}>{s.pts}<span style={{fontSize:11,fontWeight:600}}> đ</span></span>
+              </div>
+              <div style={{background:"#f1f5f9",borderRadius:99,height:9,overflow:"hidden",marginBottom:showRoundPts?6:0}}>
+                <div style={{width:`${pct}%`,height:"100%",background:`linear-gradient(90deg,${t.color}88,${t.color})`,borderRadius:99,transition:"width .7s ease"}}/>
+              </div>
+              {showRoundPts&&(
+                <div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:4}}>
+                  {ptsPerRound.map((rp,ri)=>{
+                    if(!playedRounds[ri])return null;
+                    const p=rp[tid]||0;
+                    return(
+                      <div key={ri} style={{
+                        display:"flex",flexDirection:"column",alignItems:"center",
+                        background:p>0?t.light:"#f8fafc",
+                        border:`1px solid ${p>0?t.color+"44":"#e2e8f0"}`,
+                        borderRadius:8,padding:"3px 8px",minWidth:36,
+                      }}>
+                        <span style={{fontSize:9,color:"#94a3b8",fontWeight:600}}>V{ri+1}</span>
+                        <span style={{fontSize:13,fontWeight:900,color:p>0?t.color:"#cbd5e1"}}>{p}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{background:"white",borderRadius:16,padding:18,boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>
+        <div style={{fontWeight:900,fontSize:13,color:"#1e293b",marginBottom:12}}>📋 KẾT QUẢ THEO THỂ THỨC</div>
+        {TYPE_KEYS.map(tk=>{
+          const info=TYPE_META[tk];const tw=typeWins[tk];
+          const total=Object.values(tw).reduce((a,b)=>a+b,0);
+          return(
+            <div key={tk} style={{marginBottom:12}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
+                <span style={{fontSize:12,fontWeight:800,color:info.color}}>{info.icon} {info.label}</span>
+                <span style={{fontSize:10,color:"#94a3b8"}}>{total} trận đã có KQ</span>
+              </div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                {Object.entries(tw).map(([tid,w])=>(
+                  <div key={tid} style={{display:"flex",alignItems:"center",gap:5,
+                    background:teams[tid].light,border:`1px solid ${teams[tid].color}44`,
+                    borderRadius:8,padding:"4px 10px"}}>
+                    <span style={{fontWeight:700,fontSize:11,color:teams[tid].color}}>{teams[tid].name}</span>
+                    <span style={{fontWeight:900,fontSize:13,color:teams[tid].color}}>{w}T</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{background:"white",borderRadius:16,padding:18,boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>
+        <div style={{fontWeight:900,fontSize:13,color:"#1e293b",marginBottom:14}}>⭐ SỐ TRẬN THẮNG THÀNH VIÊN</div>
+        {mems.length===0&&<div style={{color:"#94a3b8",fontSize:13}}>Chưa có dữ liệu</div>}
+        {mems.map(([name,wins],i)=>{
+          let mt=null;
+          Object.entries(teams).forEach(([tid,t])=>{
+            if([...t.members.male,...t.members.female].includes(name))mt=t;
+          });
+          const c=mt?.color||"#94a3b8";
+          return(
+            <div key={name} style={{marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontWeight:800,fontSize:11,color:"#cbd5e1",minWidth:18}}>#{i+1}</span>
+                  <span style={{fontWeight:700,fontSize:13,color:"#1e293b"}}>{name}</span>
+                  {mt&&<span style={{fontSize:9,fontWeight:700,color:c,background:mt.light,borderRadius:5,padding:"1px 6px"}}>{mt.name}</span>}
+                </div>
+                <span style={{fontWeight:900,fontSize:14,color:c}}>{wins} trận</span>
+              </div>
+              <div style={{background:"#f1f5f9",borderRadius:99,height:6}}>
+                <div style={{width:`${(wins/maxW)*100}%`,height:"100%",background:c,borderRadius:99,transition:"width .6s ease"}}/>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Win rate per member */}
+      <div style={{background:"white",borderRadius:16,padding:18,boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>
+        <div style={{fontWeight:900,fontSize:13,color:"#1e293b",marginBottom:4}}>🎯 TỈ LỆ THẮNG THÀNH VIÊN</div>
+        <div style={{fontSize:10,color:"#94a3b8",marginBottom:14}}>Tính trên các trận đã có kết quả & có tên thành viên</div>
+        {(()=>{
+          // Build list: all members from teams + anyone appearing in match data
+          const allNames=new Set();
+          Object.values(teams).forEach(t=>[...t.members.male,...t.members.female].forEach(n=>allNames.add(n)));
+          Object.keys(mp).forEach(n=>allNames.add(n));
+          const rows=Array.from(allNames).map(name=>{
+            const played=mp[name]||0;
+            const wins=stats.memberWins[name]||0;
+            const rate=played>0?Math.round((wins/played)*100):null;
+            let mt=null;
+            Object.entries(teams).forEach(([tid,t])=>{
+              if([...t.members.male,...t.members.female].includes(name))mt=t;
+            });
+            return{name,played,wins,rate,mt};
+          }).filter(r=>r.played>0).sort((a,b)=>(b.rate??-1)-(a.rate??-1)||(b.wins-a.wins));
+          if(rows.length===0)return <div style={{color:"#94a3b8",fontSize:13}}>Chưa có dữ liệu</div>;
+          return rows.map((r,i)=>{
+            const c=r.mt?.color||"#94a3b8";
+            const light=r.mt?.light||"#f8fafc";
+            const rate=r.rate??0;
+            // color based on rate
+            const barColor=rate>=70?"#22c55e":rate>=50?"#f97316":"#ef4444";
+            return(
+              <div key={r.name} style={{marginBottom:12}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{fontWeight:800,fontSize:11,color:"#cbd5e1",minWidth:18}}>#{i+1}</span>
+                    <span style={{fontWeight:700,fontSize:13,color:"#1e293b"}}>{r.name}</span>
+                    {r.mt&&<span style={{fontSize:9,fontWeight:700,color:c,background:light,borderRadius:5,padding:"1px 6px"}}>{r.mt.name}</span>}
+                    <span style={{fontSize:10,color:"#94a3b8"}}>{r.wins}T / {r.played} trận</span>
+                  </div>
+                  <span style={{fontWeight:900,fontSize:16,color:barColor}}>{rate}%</span>
+                </div>
+                <div style={{background:"#f1f5f9",borderRadius:99,height:7,overflow:"hidden"}}>
+                  <div style={{width:`${rate}%`,height:"100%",background:`linear-gradient(90deg,${barColor}88,${barColor})`,borderRadius:99,transition:"width .6s ease"}}/>
+                </div>
+              </div>
+            );
+          });
+        })()}
+      </div>
+
+      <div style={{background:"white",borderRadius:16,padding:18,boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>
+        <div style={{fontWeight:900,fontSize:13,color:"#1e293b",marginBottom:12}}>👥 THÀNH VIÊN CÁC ĐỘI</div>
+        {Object.entries(teams).map(([tid,t])=>(
+          <div key={tid} style={{marginBottom:12}}>
+            <div style={{fontWeight:800,fontSize:12,color:t.color,marginBottom:6}}>{t.name}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+              {[...t.members.male.map(n=>({n,g:"male"})),...t.members.female.map(n=>({n,g:"female"}))].map(({n,g})=>(
+                <span key={n} style={{background:t.light,color:t.color,border:`1px solid ${t.color}44`,
+                  borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600}}>
+                  {g==="male"?"♂":"♀"} {n}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── TEAM MANAGER ─────────────────────────────────────────────────────────────
+function TeamManager({teams,setTeams}){
+  const[inp,setInp]=useState({1:{male:"",female:""},2:{male:"",female:""},3:{male:"",female:""}});
+  const add=(tid,g)=>{
+    const name=inp[tid][g].trim();if(!name)return;
+    setTeams(p=>({...p,[tid]:{...p[tid],members:{...p[tid].members,[g]:[...p[tid].members[g],name]}}}));
+    setInp(p=>({...p,[tid]:{...p[tid],[g]:""}}));
+  };
+  const del=(tid,g,i)=>{
+    setTeams(p=>({...p,[tid]:{...p[tid],members:{...p[tid].members,[g]:p[tid].members[g].filter((_,j)=>j!==i)}}}));
+  };
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div style={{background:"#fef9c3",border:"1px solid #fde68a",borderRadius:10,padding:"10px 14px",fontSize:11,color:"#92400e"}}>
+        ⚠️ Thay đổi tên thành viên ở đây sẽ ảnh hưởng đến phần nhập liệu. Dữ liệu đã nhập không tự cập nhật tên mới.
+      </div>
+      {Object.entries(teams).map(([tid,t])=>(
+        <div key={tid} style={{background:"white",borderRadius:16,overflow:"hidden",boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>
+          <div style={{background:t.color,padding:"10px 16px",color:"white",fontWeight:900,fontSize:14}}>
+            {t.name}
+          </div>
+          <div style={{padding:14,display:"flex",flexDirection:"column",gap:14}}>
+            {[{k:"male",label:"Nam ♂"},{k:"female",label:"Nữ ♀"}].map(g=>(
+              <div key={g.k}>
+                <div style={{fontSize:11,fontWeight:700,color:"#475569",marginBottom:8}}>{g.label}</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:8}}>
+                  {t.members[g.k].map((n,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:3,
+                      background:t.light,border:`1.5px solid ${t.color}55`,borderRadius:20,padding:"3px 6px 3px 10px"}}>
+                      <span style={{fontSize:12,fontWeight:600,color:t.color}}>{n}</span>
+                      <button onClick={()=>del(tid,g.k,i)} style={{background:"none",border:"none",cursor:"pointer",
+                        color:"#94a3b8",fontSize:15,fontWeight:700,lineHeight:1,padding:"0 2px"}}>×</button>
+                    </div>
+                  ))}
+                  {t.members[g.k].length===0&&<span style={{fontSize:11,color:"#cbd5e1"}}>Chưa có</span>}
+                </div>
+                <div style={{display:"flex",gap:6}}>
+                  <input placeholder={`Thêm ${g.label.toLowerCase()}...`}
+                    value={inp[tid][g.k]}
+                    onChange={e=>setInp(p=>({...p,[tid]:{...p[tid],[g.k]:e.target.value}}))}
+                    onKeyDown={e=>e.key==="Enter"&&add(tid,g.k)}
+                    style={{flex:1,padding:"7px 12px",borderRadius:8,fontSize:12,
+                      border:"1.5px solid #e2e8f0",outline:"none"}}/>
+                  <button onClick={()=>add(tid,g.k)} style={{background:t.color,color:"white",border:"none",
+                    borderRadius:8,padding:"7px 16px",fontSize:15,fontWeight:700,cursor:"pointer"}}>+</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── DATA PANEL ───────────────────────────────────────────────────────────────
+function DataPanel({rounds,teams,setRounds,setTeams}){
+  const[msg,setMsg]=useState("");
+  const notify=m=>{setMsg(m);setTimeout(()=>setMsg(""),2500);};
+
+  const exportData=()=>{
+    const blob=new Blob([JSON.stringify({rounds,teams},null,2)],{type:"application/json"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=`pickleball_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();notify("✅ Đã xuất file backup!");
+  };
+  const importData=()=>{
+    const input=document.createElement("input");input.type="file";input.accept=".json";
+    input.onchange=e=>{
+      const f=e.target.files[0];if(!f)return;
+      const r=new FileReader();
+      r.onload=ev=>{
+        try{
+          const d=JSON.parse(ev.target.result);
+          if(d.rounds)setRounds(d.rounds);
+          if(d.teams)setTeams(d.teams);
+          notify("✅ Đã nhập dữ liệu thành công!");
+        }catch{notify("❌ File không hợp lệ!");}
+      };r.readAsText(f);
+    };input.click();
+  };
+  const reset=()=>{
+    if(!confirm("Xóa toàn bộ dữ liệu và reset về ban đầu?"))return;
+    setRounds(buildDefaultRounds());
+    setTeams(DEFAULT_TEAMS);
+    notify("🔄 Đã reset dữ liệu!");
+  };
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div style={{background:"white",borderRadius:16,padding:18,boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>
+        <div style={{fontWeight:900,fontSize:13,color:"#1e293b",marginBottom:4}}>💾 Lưu & Khôi phục dữ liệu</div>
+        <div style={{fontSize:11,color:"#64748b",marginBottom:14}}>
+          Dữ liệu sync realtime qua Firebase. Dùng Export/Import để backup.
+        </div>
+        {msg&&<div style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:8,padding:"8px 12px",
+          fontSize:12,fontWeight:600,color:"#166534",marginBottom:12}}>{msg}</div>}
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <button onClick={exportData} style={{padding:"12px 16px",borderRadius:10,border:"none",
+            background:"#f97316",color:"white",fontWeight:700,fontSize:13,cursor:"pointer",
+            display:"flex",alignItems:"center",gap:8}}>
+            📤 Xuất file backup (.json)
+          </button>
+          <button onClick={importData} style={{padding:"12px 16px",borderRadius:10,
+            border:"1.5px solid #e2e8f0",background:"white",color:"#475569",
+            fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
+            📥 Nhập file backup (.json)
+          </button>
+          <button onClick={reset} style={{padding:"12px 16px",borderRadius:10,
+            border:"1.5px solid #fecaca",background:"#fff5f5",color:"#dc2626",
+            fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
+            🔄 Reset về dữ liệu ban đầu
+          </button>
+        </div>
+      </div>
+
+      <div style={{background:"white",borderRadius:16,padding:18,boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>
+        <div style={{fontWeight:900,fontSize:13,color:"#1e293b",marginBottom:12}}>📊 Tổng quan dữ liệu</div>
+        {Array.from({length:18},(_,i)=>{
+          const r=rounds[i];
+          const filled=TYPE_KEYS.reduce((s,tk)=>s+r.matches[tk].filter(m=>m.score_a!==""&&m.score_b!=="").length,0);
+          const total=TYPE_KEYS.length*3;
+          const done=filled===total;
+          return(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:5,
+              padding:"6px 10px",borderRadius:8,background:done?"#f0fdf4":"#f8fafc"}}>
+              <span style={{fontWeight:700,fontSize:11,color:done?"#16a34a":"#94a3b8",minWidth:52}}>Vòng {i+1}</span>
+              <div style={{flex:1,background:"#e2e8f0",borderRadius:99,height:6}}>
+                <div style={{width:`${(filled/total)*100}%`,height:"100%",
+                  background:done?"#22c55e":"#f97316",borderRadius:99,transition:"width .4s"}}/>
+              </div>
+              <span style={{fontSize:10,color:done?"#16a34a":"#64748b",fontWeight:600,minWidth:40,textAlign:"right"}}>
+                {filled}/{total}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── NHAP LIEU TAB ────────────────────────────────────────────────────────────
+function NhapLieu({rounds,teams,onChange}){
+  const[activeRound,setActiveRound]=useState(0);
+  const[activeType,setActiveType]=useState("DOI_NAM");
+  const cur=rounds[activeRound];
+
+  const roundSummary=TYPE_KEYS.map(tk=>{
+    const ws={"1":0,"2":0,"3":0};
+    cur.matches[tk].forEach(m=>{const w=getWinner(m);if(w&&w!==0)ws[String(w)]++;});
+    return{tk,ws};
+  });
+
+  return(
+    <div>
+      <div style={{background:"white",borderRadius:14,padding:12,marginBottom:10,boxShadow:"0 1px 6px rgba(0,0,0,.06)"}}>
+        <div style={{fontWeight:700,fontSize:11,color:"#475569",marginBottom:8}}>Chọn vòng đấu:</div>
+        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          {rounds.map((r,i)=>{
+            const done=isRoundDone(r);
+            const partial=!done&&TYPE_KEYS.some(tk=>r.matches[tk].some(m=>m.score_a!==""||m.score_b!==""));
+            return(
+              <button key={i} onClick={()=>setActiveRound(i)} style={{
+                width:32,height:32,borderRadius:7,border:"2px solid",cursor:"pointer",fontWeight:700,fontSize:11,
+                background:activeRound===i?"#f97316":done?"#dcfce7":partial?"#fef9c3":"white",
+                color:activeRound===i?"white":done?"#16a34a":partial?"#92400e":"#94a3b8",
+                borderColor:activeRound===i?"#f97316":done?"#86efac":partial?"#fde68a":"#e2e8f0",
+              }}>{r.round}</button>
+            );
+          })}
+        </div>
+        <div style={{display:"flex",gap:10,marginTop:8,fontSize:10,color:"#94a3b8"}}>
+          <span>🟢 Hoàn thành</span><span>🟡 Đang nhập</span><span>⚪ Chưa nhập</span>
+        </div>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:10}}>
+        {TYPE_KEYS.map(key=>{
+          const info=TYPE_META[key];
+          const done=cur.matches[key].every(m=>m.score_a!==""&&m.score_b!=="");
+          return(
+            <button key={key} onClick={()=>setActiveType(key)} style={{
+              padding:"8px 10px",borderRadius:10,border:"2px solid",cursor:"pointer",
+              fontWeight:700,fontSize:11,textAlign:"left",
+              background:activeType===key?info.color:"white",
+              color:activeType===key?"white":info.color,
+              borderColor:info.color,transition:"all .12s",position:"relative",
+            }}>
+              <span style={{marginRight:4}}>{info.icon}</span>{info.label}
+              {done&&<span style={{position:"absolute",top:4,right:6,fontSize:9,
+                background:activeType===key?"rgba(255,255,255,.3)":"#f0fdf4",
+                color:activeType===key?"white":"#16a34a",borderRadius:4,padding:"1px 4px",fontWeight:700}}>✓ Xong</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{background:"white",borderRadius:14,padding:12,marginBottom:10,boxShadow:"0 1px 6px rgba(0,0,0,.06)"}}>
+        <div style={{fontWeight:800,fontSize:13,color:"#1e293b",marginBottom:8}}>
+          {TYPE_META[activeType].icon} {TYPE_META[activeType].label} · Vòng {cur.round}
+        </div>
+        <div style={{fontSize:10,color:"#94a3b8",marginBottom:10,background:"#f8fafc",borderRadius:7,padding:"5px 10px"}}>
+          💡 Chọn thành viên → nhập tỷ số · Hỗ trợ đánh thay ♂↔♀
+        </div>
+        {cur.matches[activeType].map((m,pi)=>(
+          <MatchCard key={pi} match={m} roundIdx={activeRound} typeKey={activeType}
+            pairIdx={pi} teams={teams} onChange={onChange}/>
+        ))}
+      </div>
+
+      <div style={{background:"white",borderRadius:14,padding:12,boxShadow:"0 1px 6px rgba(0,0,0,.06)"}}>
+        <div style={{fontWeight:700,fontSize:11,color:"#475569",marginBottom:8}}>Tổng kết vòng {cur.round}:</div>
+        {roundSummary.map(({tk,ws})=>(
+          <div key={tk} style={{display:"flex",alignItems:"center",gap:5,marginBottom:5}}>
+            <span style={{fontSize:10,fontWeight:700,color:TYPE_META[tk].color,minWidth:78}}>{TYPE_META[tk].label}</span>
+            {Object.entries(ws).map(([tid,w])=>(
+              <span key={tid} style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:6,
+                background:teams[tid].light,color:teams[tid].color,border:`1px solid ${teams[tid].color}33`}}>
+                {teams[tid].name}: {w}T
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── ROOT APP ─────────────────────────────────────────────────────────────────
+function App(){
+  const{teams,setTeams,rounds,setRounds,synced,online}=useFirebaseData(DEFAULT_TEAMS,buildDefaultRounds());
+  const[tab,setTab]=useState("dashboard");
+
+  const handleChange=useCallback((ri,tk,pi,field,val)=>{
+    setRounds(prev=>prev.map((r,i)=>{
+      if(i!==ri)return r;
+      return{...r,matches:{...r.matches,[tk]:r.matches[tk].map((m,j)=>{
+        if(j!==pi)return m;return{...m,[field]:val};
+      })}};
+    }));
+  },[]);
+
+  const stats=calcStats(rounds,teams);
+  const completedRounds=rounds.filter(isRoundDone).length;
+  const totalPts=Object.values(stats.teamStats).reduce((s,t)=>s+t.pts,0);
+  const totalMembers=Object.values(teams).reduce((s,t)=>s+t.members.male.length+t.members.female.length,0);
+
+  const TABS=[
+    {k:"dashboard",label:"📊 Tổng quan"},
+    {k:"nhap",label:"✏️ Nhập liệu"},
+    {k:"doi",label:"👥 Đội"},
+    {k:"data",label:"💾 Dữ liệu"},
+  ];
+
+  return(
+    <div style={{minHeight:"100vh",background:"#f1f5f9"}}>
+      <div style={{background:"linear-gradient(135deg,#ea580c,#f97316)",padding:"16px 18px 12px",color:"white"}}>
+        <div style={{fontSize:9,letterSpacing:2,opacity:.8,fontWeight:700}}>PICKLEBALL · LEAGUE TRACKER</div>
+        <div style={{fontSize:20,fontWeight:900,marginTop:1}}>🏓 Giải Pickleball</div>
+        <div style={{display:"flex",gap:8,marginTop:9,flexWrap:"wrap",alignItems:"center"}}>
+          {[
+            {val:`${completedRounds}/18`,label:"Vòng xong"},
+            {val:totalPts,label:"Tổng điểm"},
+            {val:totalMembers,label:"Thành viên"},
+          ].map(s=>(
+            <div key={s.label} style={{background:"rgba(255,255,255,.18)",borderRadius:9,padding:"4px 11px"}}>
+              <div style={{fontSize:15,fontWeight:900}}>{s.val}</div>
+              <div style={{fontSize:9,opacity:.85}}>{s.label}</div>
+            </div>
+          ))}
+          <div style={{marginLeft:"auto",background:online?(synced?"rgba(255,255,255,.25)":"rgba(255,255,255,.15)"):"rgba(0,0,0,.2)",
+            borderRadius:9,padding:"4px 11px",fontSize:10,fontWeight:700}}>
+            {online?(synced?"🟢 Realtime":"⏳ Đang kết nối..."):"🔴 Offline"}
+          </div>
+        </div>
+      </div>
+
+      <div style={{display:"flex",background:"#1e293b",position:"sticky",top:0,zIndex:99}}>
+        {TABS.map(t=>(
+          <button key={t.k} onClick={()=>setTab(t.k)} style={{
+            flex:1,padding:"10px 0",border:"none",cursor:"pointer",
+            fontWeight:700,fontSize:10,background:"transparent",
+            color:tab===t.k?"#f97316":"#64748b",
+            borderBottom:tab===t.k?"2.5px solid #f97316":"2.5px solid transparent",
+            transition:"all .12s",
+          }}>{t.label}</button>
+        ))}
+      </div>
+
+      <div style={{padding:12,maxWidth:680,margin:"0 auto",paddingBottom:32}}>
+        {tab==="dashboard"&&<Dashboard stats={stats} teams={teams} rounds={rounds}/>}
+        {tab==="nhap"&&<NhapLieu rounds={rounds} teams={teams} onChange={handleChange}/>}
+        {tab==="doi"&&<TeamManager teams={teams} setTeams={setTeams}/>}
+        {tab==="data"&&<DataPanel rounds={rounds} teams={teams} setRounds={setRounds} setTeams={setTeams}/>}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
