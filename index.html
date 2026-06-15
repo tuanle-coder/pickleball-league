@@ -108,25 +108,32 @@ function getWinner(m){
   const a=Number(m.score_a),b=Number(m.score_b);
   if(a>b)return String(m.team_a);if(b>a)return String(m.team_b);return 0;
 }
-function toArr(v){return !v?[]:Array.isArray(v)?v:Object.values(v);}
+function toArr(v){
+  if(!v)return[];
+  if(Array.isArray(v))return v;
+  if(typeof v==="object")return Object.values(v);
+  return[];
+}
 function calcStats(rounds,teams){
   const ts={"1":{pts:0,w:0,l:0},"2":{pts:0,w:0,l:0},"3":{pts:0,w:0,l:0}};
-  const mw={};   // member wins
-  const mp={};   // member played (total matches)
-  rounds.forEach(round=>TYPE_KEYS.forEach(tk=>{
-    const matches=toArr(round.matches[tk]);
-    matches.forEach(m=>{
-      const w=getWinner(m);if(w===null)return;
-      // count played for all participants
-      [...toArr(m.players_a),...toArr(m.players_b)].forEach(n=>{if(n)mp[n]=(mp[n]||0)+1;});
-      if(w!==0){
-        const ws=String(w);
-        const ls=String(ws===String(m.team_a)?m.team_b:m.team_a);
-        ts[ws].pts+=2;ts[ws].w++;ts[ls].l++;
-        toArr(ws===String(m.team_a)?m.players_a:m.players_b).forEach(n=>{if(n)mw[n]=(mw[n]||0)+1;});
-      }
+  const mw={};
+  const mp={};
+  toArr(rounds).forEach(round=>{
+    if(!round||!round.matches)return;
+    TYPE_KEYS.forEach(tk=>{
+      toArr(round.matches[tk]).forEach(m=>{
+        if(!m)return;
+        const w=getWinner(m);if(w===null)return;
+        [...toArr(m.players_a),...toArr(m.players_b)].forEach(n=>{if(n)mp[n]=(mp[n]||0)+1;});
+        if(w!==0){
+          const ws=String(w);
+          const ls=String(ws===String(m.team_a)?m.team_b:m.team_a);
+          ts[ws].pts+=2;ts[ws].w++;ts[ls].l++;
+          toArr(ws===String(m.team_a)?m.players_a:m.players_b).forEach(n=>{if(n)mw[n]=(mw[n]||0)+1;});
+        }
+      });
     });
-  }));
+  });
   return{teamStats:ts,memberWins:mw,memberPlayed:mp};
 }
 function isRoundDone(r){
