@@ -137,7 +137,22 @@ function calcStats(rounds,teams){
   return{teamStats:ts,memberWins:mw,memberPlayed:mp};
 }
 function isRoundDone(r){
-  return TYPE_KEYS.every(tk=>r.matches[tk].every(m=>m.score_a!==""&&m.score_b!==""));
+  if(!r||!r.matches)return false;
+  return TYPE_KEYS.every(tk=>toArr(r.matches[tk]).every(m=>m&&m.score_a!==""&&m.score_b!==""));
+}
+// Normalize Firebase data: convert any object-arrays back to real arrays
+function normalizeRounds(data){
+  return toArr(data).map(r=>{
+    if(!r)return r;
+    const matches={};
+    TYPE_KEYS.forEach(tk=>{
+      matches[tk]=toArr(r.matches?.[tk]).map(m=>{
+        if(!m)return m;
+        return{...m,players_a:toArr(m.players_a),players_b:toArr(m.players_b)};
+      });
+    });
+    return{...r,matches};
+  });
 }
 
 // ─── FIREBASE HOOK ────────────────────────────────────────────────────────────
@@ -167,7 +182,7 @@ function useFirebaseData(teamsDefault,roundsDefault){
         if(skipRef.current)return;
         const val=snap.val();
         if(val){
-          setRoundsState(val);
+          setRoundsState(normalizeRounds(val));
         } else {
           // No data in Firebase yet — write defaults
           skipRef.current=true;
