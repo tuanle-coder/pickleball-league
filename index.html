@@ -650,11 +650,24 @@ function DataPanel({rounds,teams,setRounds,setTeams}){
 function NhapLieu({rounds,teams,onChange}){
   const[activeRound,setActiveRound]=useState(0);
   const[activeType,setActiveType]=useState("DOI_NAM");
+  const autoPicked=useRef(false);
+
+  // Lần đầu mở trang: tự nhảy tới vòng chưa hoàn thành gần nhất
+  useEffect(()=>{
+    if(autoPicked.current)return;
+    if(!rounds||rounds.length===0)return;
+    let idx=rounds.findIndex(r=>!isRoundDone(r));
+    if(idx===-1)idx=rounds.length-1; // tất cả đã xong → vòng cuối
+    setActiveRound(idx);
+    autoPicked.current=true;
+  },[rounds]);
+
   const cur=rounds[activeRound];
+  if(!cur)return null;
 
   const roundSummary=TYPE_KEYS.map(tk=>{
     const ws={"1":0,"2":0,"3":0};
-    cur.matches[tk].forEach(m=>{const w=getWinner(m);if(w&&w!==0)ws[String(w)]++;});
+    toArr(cur.matches[tk]).forEach(m=>{const w=getWinner(m);if(w&&w!==0)ws[String(w)]++;});
     return{tk,ws};
   });
 
