@@ -259,8 +259,19 @@ button.hlc{font:inherit;color:inherit}
 .col .picked{font-weight:800;font-size:14.5px;line-height:1.35;min-height:20px;margin-bottom:10px;word-break:break-word}
 .col.lost .picked{color:var(--muted)}
 .col .picked.none{color:#bfae94;font-weight:600;font-size:13px}
-.col .chips{gap:5px}
-.col .chip{font-size:12.5px;padding:5px 10px 5px 5px}
+/* ô tên đều nhau: lưới cột bằng nhau, tên dài thì cắt "…" */
+.col .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:6px}
+.col .chip{width:100%;min-width:0;font-size:12.5px;padding:5px 8px 5px 5px;height:34px}
+.chip .cn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* thanh tiêu đề trận so le màu */
+.mhead{background:var(--goldl)}
+.mhead.alt{background:var(--brown);border-bottom-color:var(--brown)}
+.mhead.alt .mno{background:var(--grad);color:var(--brown)}
+.mhead.alt .mlabel{color:#f6ebd3}
+.mhead.alt .mlabel:focus{color:var(--brown)}
+.mhead.alt .iconbtn{color:#e6cf98}
+.mhead.alt .iconbtn:hover,.mhead.alt .iconbtn:active{background:rgba(255,255,255,.12);color:#fff}
+.mhead.alt .sdot.ok{background:rgba(47,133,90,.25);color:#9be3bd}
 .score{display:flex;align-items:center;justify-content:center;gap:14px;padding:12px;border-top:1px solid var(--line);background:var(--goldll)}
 .score input{width:80px;height:60px;border-radius:6px;border:2px solid var(--line2);background:#fff;text-align:center;font-family:var(--disp);font-size:30px;font-weight:900;color:var(--ink);-moz-appearance:textfield}
 .score input::-webkit-outer-spin-button,.score input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
@@ -822,7 +833,7 @@ function Picker({team,t,sel,onChange,rank}){
     <div className="chips" style={{"--tc":TEAM_HEX[t]}}>
       {ms.map(m=>(
         <button key={m.name} className={"chip"+(sel.includes(m.name)?" on":"")} onClick={()=>tog(m.name)}>
-          <span className={"rk "+m.rank}>{m.rank}</span>{m.name}
+          <span className={"rk "+m.rank}>{m.rank}</span><span className="cn">{m.name}</span>
         </button>
       ))}
       {rank&&<button className="chip more" onClick={()=>setAll(!all)}>{all?"Chỉ Hạng "+rank:"+ Hạng khác"}</button>}
@@ -857,7 +868,7 @@ function MatchCard({m,mi,ri,data,save,isNext,onDelete}){
 
   return(
     <div className={"match"+(isNext?" is-next":"")}>
-      <div className="mhead">
+      <div className={"mhead"+(mi%2?" alt":"")}>
         <span className="mno">Trận {mi+1}</span>
         <input className="mlabel" value={label} placeholder="Tên trận"
           onChange={e=>setLabel(e.target.value)}
