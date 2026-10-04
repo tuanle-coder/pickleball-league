@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#4c1d95">
+<meta name="theme-color" content="#faf5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Edutalk Pickleball League</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -31,183 +33,311 @@
 
 <style>
 :root{
-  --bg:#f6f4fe;--card:#fff;--ink:#1f1640;--muted:#6e6a86;--line:#ece8f8;
-  --p:#7c3aed;--p2:#6d28d9;--p3:#4c1d95;--pl:#f1ecff;--pll:#faf8ff;
-  --t1:#0284c7;--t1l:#e0f2fe;--t2:#e11d48;--t2l:#ffe4e6;
-  --ok:#16a34a;--warn:#d97706;
-  --sh:0 1px 2px rgba(31,22,64,.04),0 8px 24px rgba(76,29,149,.07);
+  --bg:#faf5ec;--surface:#fffaf2;--card:#ffffff;--card2:#fbf6ec;
+  --line:#efe4d0;--line2:#e3d4b8;
+  --ink:#2b1d0e;--ink2:#5b4630;--muted:#9a8468;
+  --gold:#c9a14a;--gold2:#a87a24;--goldl:#f6ebd3;--goldll:#fbf5e8;
+  --grad:linear-gradient(135deg,#f0d999 0%,#d4ad57 45%,#a87a24 100%);
+  --brown:#3b2a14;
+  --t1:#2563a8;--t1l:#e8eff8;--t2:#d0682a;--t2l:#fcede3;
+  --good:#2f855a;--goodl:#e6f4ec;--warn:#b7791f;--warnl:#fdf3dc;--bad:#c2410c;
+  --win:#c9a14a;--loss:#dccfb8;
+  --disp:"Montserrat",system-ui,sans-serif;
+  --sh:0 1px 2px rgba(59,42,20,.05),0 10px 28px -12px rgba(120,86,30,.22);
+  --r:22px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Be Vietnam Pro",system-ui,-apple-system,sans-serif}
-button{font-family:inherit;cursor:pointer}
+html,body{margin:0;color:var(--ink);font-family:"Nunito",system-ui,-apple-system,sans-serif;overflow-x:hidden}
+body{min-height:100vh;background:
+  radial-gradient(520px 360px at 105% -8%,rgba(233,207,143,.55),transparent 65%),
+  radial-gradient(480px 360px at -15% 25%,rgba(246,235,211,.9),transparent 60%),
+  var(--bg);background-attachment:fixed}
+button{font-family:inherit;cursor:pointer;color:inherit}
 input,select{font-family:inherit}
+.mono{font-family:var(--disp);font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
-.app{max-width:680px;margin:0 auto;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+.app{max-width:640px;margin:0 auto;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+
+/* TOP BAR */
+.top{position:sticky;top:0;z-index:30;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background:rgba(250,245,236,.82);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
+  border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-family:var(--disp);font-weight:900;font-size:17px;color:#fff;
+  background:var(--grad);box-shadow:0 0 0 2px #fff,0 4px 14px rgba(168,122,36,.35);text-shadow:0 1px 2px rgba(80,50,10,.35)}
+.brand{flex:1;min-width:0}
+.brand small{display:block;font-family:var(--disp);font-size:10px;font-weight:800;letter-spacing:.24em;color:var(--gold2);text-transform:uppercase}
+.brand b{display:block;font-family:var(--disp);font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em;color:var(--brown)}
+.live{font-family:var(--disp);font-size:10px;font-weight:800;letter-spacing:.08em;padding:6px 10px;border-radius:999px;
+  border:1px solid var(--line2);background:#fff;display:flex;align-items:center;gap:6px;white-space:nowrap;text-transform:uppercase;color:var(--ink2)}
+.live i{width:7px;height:7px;border-radius:50%;display:block}
+.live i.on{background:var(--good);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,133,90,.5)}70%{box-shadow:0 0 0 7px rgba(47,133,90,0)}100%{box-shadow:0 0 0 0 rgba(47,133,90,0)}}
+.miniscore{font-family:var(--disp);font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:#fff;border:1px solid var(--line2);box-shadow:var(--sh)}
+
+main{padding:14px 14px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
+.ch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}
+.ch h2{margin:0;font-family:var(--disp);font-size:15px;font-weight:800;letter-spacing:-.01em;color:var(--brown)}
+.eyebrow{font-family:var(--disp);font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold2)}
+.hint{font-size:12px;color:var(--muted)}
+.empty{text-align:center;color:var(--muted);font-size:14px;padding:20px 8px}
 
 /* HERO */
-.hero{background:radial-gradient(130% 140% at 0% 0%,#8b5cf6 0%,#6d28d9 42%,#3b0764 100%);color:#fff;
-  padding:calc(18px + env(safe-area-inset-top)) 16px 20px;border-radius:0 0 28px 28px;position:relative;overflow:hidden}
-.hero::before{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-90px;top:-110px;
-  background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%)}
-.hero-top{display:flex;justify-content:space-between;align-items:center;position:relative}
-.brand small{letter-spacing:.2em;font-size:10px;opacity:.75;font-weight:600;text-transform:uppercase}
-.brand h1{margin:2px 0 0;font-size:20px;font-weight:800;letter-spacing:-.01em}
-.pill{font-size:11px;font-weight:600;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.14);
-  border:1px solid rgba(255,255,255,.18);display:flex;gap:6px;align-items:center;white-space:nowrap}
-.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
-.board{margin-top:16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;position:relative;
-  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:22px;padding:14px 10px}
+.hero{position:relative;border-radius:26px;padding:18px 14px 14px;margin-bottom:12px;overflow:hidden;
+  background:linear-gradient(160deg,#fffaf0 0%,#f7e9c9 55%,#efd9a6 100%);border:1px solid #ead7ad;
+  box-shadow:0 18px 40px -18px rgba(168,122,36,.45),inset 0 1px 0 #fff}
+.hero::before{content:"★";position:absolute;right:-8px;top:-30px;font-size:150px;color:rgba(201,161,74,.13);line-height:1}
+.hero-title{text-align:center;font-family:var(--disp);font-weight:900;font-size:13px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;position:relative}
+.board{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;position:relative}
 .side{text-align:center;min-width:0}
-.side .nm{font-size:12.5px;font-weight:700;display:flex;justify-content:center;gap:6px;align-items:center;opacity:.92}
-.side .nm span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.side .pts{font-size:44px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.side .sub{font-size:11px;opacity:.7}
-.side .lead{display:inline-block;margin-top:5px;font-size:10px;font-weight:700;background:#fde68a;color:#78350f;border-radius:999px;padding:2px 8px}
-.vs{font-size:11px;font-weight:800;opacity:.55;letter-spacing:.1em}
-.meta{display:flex;gap:8px;margin-top:10px;position:relative}
-.meta div{flex:1;background:rgba(255,255,255,.1);border-radius:14px;padding:8px 10px}
-.meta b{display:block;font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
-.meta span{font-size:10.5px;opacity:.75}
+.side .nm{font-family:var(--disp);font-size:13px;font-weight:800;display:flex;justify-content:center;align-items:center;gap:6px}
+.side .pts{font-family:var(--disp);font-size:54px;font-weight:900;line-height:1.05;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.side .sub{font-size:12px;color:var(--ink2);font-weight:600}
+.lead{display:inline-block;margin-top:6px;font-family:var(--disp);font-size:9.5px;font-weight:900;letter-spacing:.12em;
+  padding:4px 10px;border-radius:999px;background:var(--grad);color:#fff;text-shadow:0 1px 1px rgba(80,50,10,.35)}
+.vs{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-size:12px;font-weight:900;color:#fff;
+  background:var(--grad);box-shadow:0 0 0 3px #fff,0 6px 14px rgba(168,122,36,.35)}
+.share{margin-top:14px;position:relative}
+.share .lab{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);font-weight:700;margin-bottom:6px}
+.share .lab b{font-family:var(--disp)}
+.split{height:9px;border-radius:999px;background:#efe3cc;display:flex;gap:2px;overflow:hidden}
+.split i{display:block;height:100%}
+.split i:first-child{border-radius:999px 0 0 999px}.split i:last-child{border-radius:0 999px 999px 0}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;position:relative}
+.kpi{background:rgba(255,255,255,.75);border:1px solid #efdcb3;border-radius:16px;padding:9px 10px}
+.kpi b{display:block;font-family:var(--disp);font-size:18px;font-weight:800;color:var(--brown)}
+.kpi span{font-size:11px;color:var(--ink2);font-weight:600}
+.tdot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
 
-main{padding:16px}
-.card{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:16px;margin-bottom:14px;border:1px solid var(--line)}
-.card h2{font-size:14px;font-weight:800;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.card h2 .hint{font-weight:500;color:var(--muted);font-size:11.5px}
-.empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 10px}
-.steps{display:grid;gap:8px;margin-top:10px;text-align:left}
-.steps div{background:var(--pll);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--ink)}
-.steps b{color:var(--p2)}
+/* NEXT MATCH */
+.next{border:1.5px solid #e6cf98;background:linear-gradient(180deg,#fffdf7,#fff)}
+.vsrow{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:4px 0 12px}
+.vsrow .pr{font-weight:800;font-size:15px;line-height:1.35}
+.vsrow .pr:last-child{text-align:right}
+.vsrow .x{font-family:var(--disp);font-size:11px;font-weight:800;color:var(--gold2)}
+
+/* HIGHLIGHTS */
+.hl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hlc{background:var(--goldll);border:1px solid var(--line);border-radius:18px;padding:12px;min-width:0;text-align:left}
+.hlc .ic{font-size:18px}
+.hlc .k{font-family:var(--disp);font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);margin-top:6px}
+.hlc .v{font-weight:800;font-size:15px;margin-top:3px;line-height:1.3;word-break:break-word;color:var(--brown)}
+.hlc .s{font-size:12px;color:var(--ink2);margin-top:2px;font-weight:600}
+button.hlc{font:inherit;color:inherit}
+
+/* ROUND ROWS */
+.rrow{display:grid;grid-template-columns:58px 24px 1fr 24px 52px;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.rrow:first-child{border-top:0}
+.rnum{font-family:var(--disp);font-size:11px;color:var(--muted);font-weight:800}
+.rv{font-family:var(--disp);font-weight:800;font-size:15px;text-align:center}
+.rv.dim{opacity:.4}
+.badge{font-family:var(--disp);font-size:9.5px;font-weight:800;letter-spacing:.05em;padding:4px 8px;border-radius:999px;text-align:center;white-space:nowrap}
+.b-ok{background:var(--goodl);color:var(--good)}
+.b-live{background:var(--warnl);color:var(--warn)}
+.b-idle{background:var(--card2);color:var(--muted);border:1px solid var(--line)}
+.b-draw{background:var(--goldl);color:var(--gold2)}
+.lrow{padding:10px 0;border-top:1px solid var(--line)}
+.lrow:first-child{border-top:0}
+.lrow .top2{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;font-weight:800;margin-bottom:7px}
+.lrow .top2 .mono{font-size:14px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px;font-weight:600}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
 
 /* TAB BAR */
-.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:calc(100% - 24px);max-width:520px;
-  background:rgba(30,16,64,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:22px;display:flex;padding:6px;
-  box-shadow:0 10px 30px rgba(46,16,101,.35);z-index:20}
-.tabbar button{flex:1;background:none;border:0;color:#c4b5fd;padding:8px 4px;border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;transition:background .15s}
-.tabbar button.on{background:var(--p);color:#fff}
-.tabbar svg{width:20px;height:20px}
+.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:calc(100% - 20px);max-width:560px;z-index:40;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--line2);border-radius:24px;display:flex;padding:5px;box-shadow:0 14px 34px -10px rgba(91,70,48,.35)}
+.tabbar button{flex:1;background:none;border:0;color:var(--muted);padding:8px 2px 7px;border-radius:19px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:800;transition:all .18s;min-width:0}
+.tabbar button.on{color:#fff;background:var(--brown);box-shadow:0 6px 16px -4px rgba(59,42,20,.5)}
+.tabbar button.on svg{color:#f0d999}
+.tabbar svg{width:21px;height:21px}
 
-/* BUTTONS / INPUTS */
-.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:700;font-size:13px;background:var(--p);color:#fff;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+/* CONTROLS */
+.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;font-size:14px;color:var(--brown);display:inline-flex;align-items:center;gap:6px;justify-content:center;
+  background:var(--grad);box-shadow:0 8px 18px -8px rgba(168,122,36,.7),inset 0 1px 0 rgba(255,255,255,.5)}
 .btn:active{transform:scale(.98)}
-.btn.ghost{background:var(--pl);color:var(--p2)}
-.btn.danger{background:#fff1f2;color:#e11d48}
-.btn.sm{padding:7px 11px;font-size:12px;border-radius:10px}
+.btn.ghost{background:#fff;color:var(--gold2);border:1.5px solid #e6cf98;box-shadow:none}
+.btn.danger{background:#fff4ee;color:var(--bad);border:1px solid #f3c9b4;box-shadow:none}
+.btn.sm{padding:8px 12px;font-size:12.5px;border-radius:12px}
 .btn.block{width:100%}
-.btn:disabled{opacity:.4}
-.iconbtn{border:0;background:transparent;color:var(--muted);width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto}
-.iconbtn:hover{background:var(--pl);color:var(--p2)}
-.iconbtn svg{width:16px;height:16px}
-.field{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:16px;background:#fff;color:var(--ink)}
-.field:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px rgba(124,58,237,.12)}
-.seg{display:inline-flex;background:var(--pl);border-radius:11px;padding:3px;gap:2px}
-.seg button{border:0;background:transparent;padding:5px 11px;border-radius:8px;font-weight:700;font-size:12px;color:var(--p2)}
-.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(31,22,64,.12)}
+.iconbtn{border:0;background:transparent;color:var(--muted);width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto}
+.iconbtn:active,.iconbtn:hover{background:var(--goldl);color:var(--brown)}
+.iconbtn:disabled{opacity:.3}
+.iconbtn svg{width:18px;height:18px}
+.field{width:100%;border:1.5px solid var(--line2);border-radius:14px;padding:11px 13px;font-size:16px;background:#fff;color:var(--ink);font-weight:600}
+.field::placeholder{color:#bfae94;font-weight:500}
+.field:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,161,74,.2)}
+.seg{display:inline-flex;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:3px;gap:2px;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{border:0;background:transparent;padding:7px 12px;border-radius:11px;font-weight:800;font-size:12.5px;color:var(--ink2);white-space:nowrap}
+.seg button.on{background:var(--brown);color:#fff}
+.seg.full{display:grid;grid-template-columns:repeat(4,1fr);width:100%}
+.seg.full button{padding:8px 2px;font-size:12px}
 .row{display:flex;gap:8px;align-items:center}
-.lbl{font-size:12px;font-weight:700;color:var(--muted);margin:0 0 6px}
-.tag{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
-.tag.ok{background:#dcfce7;color:#15803d}.tag.live{background:#fef3c7;color:#b45309}.tag.idle{background:var(--pl);color:var(--p2)}
-.tdot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
-
-/* OVERVIEW */
-.rrow{display:grid;grid-template-columns:40px 26px 1fr 26px 22px;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
-.rrow:first-child{border-top:0}
-.rnum{font-weight:700;font-size:12px;color:var(--muted)}
-.rv{font-weight:800;font-size:15px;text-align:center;font-variant-numeric:tabular-nums}
-.rv.dim{opacity:.35}
-.split{height:10px;border-radius:999px;background:var(--pl);display:flex;overflow:hidden;gap:2px}
-.split i{display:block;height:100%}
-.rw{font-size:12px;text-align:center}
-.lrow{padding:9px 0;border-top:1px solid var(--line)}
-.lrow:first-child{border-top:0}
-.lrow .top{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:6px}
-.mrow{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
-.mrow:first-child{border-top:0}
-.mrow .pos{font-weight:800;font-size:12px;color:var(--muted);text-align:center}
-.mrow .pos.g{color:#b45309}
-.mrow .nm{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;min-width:0}
-.mrow .nm span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mrow .s{font-size:11.5px;color:var(--muted);margin-top:2px}
-.mrow .bar{height:6px;background:var(--pl);border-radius:999px;overflow:hidden;margin-top:6px}
-.mrow .bar i{display:block;height:100%;border-radius:999px}
-.mrow .pct{font-weight:800;font-size:17px;text-align:right;font-variant-numeric:tabular-nums}
-.mrow .pct small{display:block;font-size:10.5px;font-weight:600;color:var(--muted)}
-.rk{width:18px;height:18px;border-radius:6px;font-size:10px;font-weight:800;display:inline-grid;place-items:center;background:#ede9fe;color:#6d28d9;flex:0 0 auto}
-.rk.B{background:#fef3c7;color:#b45309}
+.lbl{font-family:var(--disp);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);margin:0 0 7px;font-weight:800}
+.rk{width:20px;height:20px;border-radius:7px;font-family:var(--disp);font-size:10.5px;font-weight:900;display:inline-grid;place-items:center;flex:0 0 auto;
+  background:var(--grad);color:#fff;text-shadow:0 1px 1px rgba(80,50,10,.3)}
+.rk.B{background:#efe3cc;color:var(--ink2);text-shadow:none}
+.banner{background:var(--warnl);border:1px solid #f1d9a4;color:#7a5414;border-radius:16px;padding:12px;font-size:13.5px;font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 
 /* ENTRY */
-.rstrip{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none;scroll-behavior:smooth}
+.rstrip{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none;scroll-behavior:smooth}
 .rstrip::-webkit-scrollbar{display:none}
-.rchip{flex:0 0 auto;min-width:48px;height:54px;border-radius:15px;border:1.5px solid var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  font-weight:800;font-size:16px;color:var(--ink);position:relative;padding:0 6px}
-.rchip small{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.rchip.done{background:var(--pl);border-color:#ddd6fe;color:var(--p2)}
-.rchip.part::after{content:"";position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--warn)}
-.rchip.done::after{content:"";position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--p)}
-.rchip.on{background:var(--p);border-color:var(--p);color:#fff;box-shadow:0 6px 16px rgba(124,58,237,.35)}
-.rchip.on small{color:#e9d5ff}
-.rchip.on::after{display:none}
-.legend{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
-.legend span{display:flex;align-items:center;gap:5px}
-.rhead{display:flex;align-items:center;gap:10px}
-.rhead h3{margin:0;font-size:20px;font-weight:800;flex:1}
-.mini{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-top:12px;background:var(--pll);border:1px solid var(--line);border-radius:16px;padding:10px}
-.mini .s{text-align:center}
-.mini .s div:first-child{font-size:12px;font-weight:700}
-.mini .s b{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
-.mini .c{font-size:11px;color:var(--muted);font-weight:700;text-align:center}
-.prog{height:6px;background:var(--pl);border-radius:999px;overflow:hidden;margin-top:10px}
-.prog i{display:block;height:100%;background:linear-gradient(90deg,#a78bfa,#7c3aed);border-radius:999px;transition:width .3s}
+.rchip{flex:0 0 auto;width:52px;height:58px;border-radius:17px;border:1.5px solid var(--line2);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:var(--disp);font-weight:800;font-size:18px;color:var(--ink2);position:relative}
+.rchip small{font-size:8.5px;font-weight:800;color:var(--muted);letter-spacing:.08em}
+.rchip.done{border-color:#e6cf98;color:var(--gold2);background:var(--goldll)}
+.rchip.done::after,.rchip.part::after{content:"";position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%}
+.rchip.done::after{background:var(--good)}
+.rchip.part::after{background:var(--warn)}
+.rchip.on{background:var(--brown);border-color:var(--brown);color:#f0d999;box-shadow:0 8px 18px -6px rgba(59,42,20,.55)}
+.rchip.on small{color:#e6cf98}.rchip.on::after{display:none}
+.rhead{display:flex;align-items:center;gap:6px}
+.rhead h3{margin:0;font-family:var(--disp);font-size:21px;font-weight:900;flex:1;color:var(--brown)}
+.duel{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;margin-top:12px}
+.duel .s{text-align:center}
+.duel .s div{font-size:13px;font-weight:800;color:var(--ink2)}
+.duel .s b{font-family:var(--disp);font-size:38px;font-weight:900;line-height:1.1}
+.duel .c{font-family:var(--disp);font-size:10px;font-weight:800;color:var(--gold2);letter-spacing:.14em;padding-bottom:12px}
+.prog{height:8px;background:#f1e6d1;border-radius:999px;overflow:hidden;margin-top:12px}
+.prog i{display:block;height:100%;background:var(--grad);border-radius:999px;transition:width .3s}
+.rmeta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:7px;font-weight:600}
+.rmeta b{font-family:var(--disp);color:var(--ink2)}
 
-.match{background:#fff;border:1.5px solid var(--line);border-radius:20px;margin-bottom:12px;overflow:hidden;box-shadow:var(--sh)}
-.match.next{border-color:#c4b5fd;box-shadow:0 0 0 4px rgba(124,58,237,.09),var(--sh)}
-.mhead{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 12px;background:var(--pll);border-bottom:1px solid var(--line)}
-.mno{font-size:11px;font-weight:800;color:#fff;background:var(--p);border-radius:8px;padding:3px 8px;white-space:nowrap}
-.mlabel{flex:1;border:0;background:transparent;font-weight:700;font-size:16px;color:var(--ink);padding:4px 6px;border-radius:8px;min-width:0}
-.mlabel:focus{outline:2px solid #ddd6fe;background:#fff}
-.mbody{display:grid;grid-template-columns:1fr 1fr}
-.mside{padding:12px;min-width:0}
-.mside+.mside{border-left:1px solid var(--line)}
-.mside.win1{background:linear-gradient(180deg,var(--t1l),#fff 80%)}
-.mside.win2{background:linear-gradient(180deg,var(--t2l),#fff 80%)}
-.mside .tn{font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px}
-.mside .wl{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;color:#fff}
-.picked{font-size:13px;font-weight:700;min-height:19px;margin-bottom:8px;color:var(--ink);word-break:break-word}
-.picked.none{color:#b8b3cc;font-weight:500;font-size:12px}
+.match{background:#fff;border:1px solid var(--line);border-radius:22px;margin-bottom:10px;overflow:hidden;box-shadow:var(--sh)}
+.match.is-next{border:1.5px solid var(--gold);box-shadow:0 0 0 4px rgba(201,161,74,.16),var(--sh)}
+.mhead{display:flex;align-items:center;gap:8px;padding:11px 12px 9px 14px;background:var(--goldll);border-bottom:1px solid var(--line)}
+.mno{font-family:var(--disp);font-size:11px;font-weight:900;color:#fff;background:var(--brown);border-radius:8px;padding:3px 7px}
+.mtitle{flex:1;min-width:0;font-weight:800;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--brown)}
+.mtime{font-family:var(--disp);font-size:12px;color:var(--gold2);font-weight:800}
+.side2{display:grid;grid-template-columns:5px 1fr auto;gap:10px;align-items:center;padding:9px 10px 9px 0;border-top:1px solid var(--line)}
+.mhead+.side2{border-top:0}
+.side2 .bar{height:100%;min-height:46px;border-radius:0 5px 5px 0;background:var(--tc);opacity:.35}
+.side2.won{background:linear-gradient(90deg,var(--tcl),#fff 80%)}
+.side2.won .bar{opacity:1}
+.side2.lost .names{color:var(--muted)}
+.who{min-width:0}
+.tname{font-size:12px;font-weight:800;color:var(--tc);display:flex;align-items:center;gap:6px}
+.plus{font-family:var(--disp);font-size:10px;font-weight:900;padding:1px 7px;border-radius:999px;background:var(--tc);color:#fff}
+.names{font-weight:800;font-size:15px;margin-top:2px;line-height:1.3;word-break:break-word}
+.names.none{color:#bfae94;font-weight:600;font-size:13.5px}
+.stepper{display:flex;align-items:center;gap:4px}
+.stepper button{width:36px;height:44px;border-radius:12px;border:1.5px solid var(--line2);background:#fff;font-size:20px;font-weight:700;color:var(--ink2);display:grid;place-items:center}
+.stepper button:active{background:var(--goldl)}
+.stepper input{width:56px;height:50px;border-radius:14px;border:1.5px solid var(--line2);background:var(--surface);text-align:center;font-family:var(--disp);font-size:24px;font-weight:900;color:var(--ink);-moz-appearance:textfield}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.stepper input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,161,74,.2)}
+.side2.won .stepper input{border-color:var(--tc);color:var(--tc);background:#fff;box-shadow:0 0 0 1px var(--tc) inset}
+.mfoot{display:flex;align-items:center;gap:6px;padding:6px 8px 8px 14px;border-top:1px solid var(--line)}
+.mfoot .warnline{flex:1;font-size:12px;color:var(--warn);font-weight:700}
+.mpanel{padding:12px 14px 14px;border-top:1px solid var(--line);background:var(--card2);display:grid;gap:12px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px 5px 5px;font-size:12px;font-weight:600;color:var(--ink);display:inline-flex;align-items:center;gap:6px;max-width:100%}
-.chip .rk{border-radius:50%}
-.chip.on1{background:var(--t1);border-color:var(--t1);color:#fff}
-.chip.on2{background:var(--t2);border-color:var(--t2);color:#fff}
-.chip.on1 .rk,.chip.on2 .rk{background:rgba(255,255,255,.25);color:#fff}
-.score{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px;border-top:1px solid var(--line);background:#fcfbff}
-.score input{width:76px;height:58px;border-radius:16px;border:2px solid var(--line);text-align:center;font-size:28px;font-weight:800;color:var(--ink);background:#fff;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.chip{border:1.5px solid var(--line2);background:#fff;border-radius:999px;padding:6px 12px 6px 6px;font-size:13px;font-weight:700;color:var(--ink2);display:inline-flex;align-items:center;gap:6px}
+.chip.on{background:var(--tc);border-color:var(--tc);color:#fff}
+.chip.on .rk{background:rgba(255,255,255,.28);color:#fff}
+.chip.more{padding:6px 12px;color:var(--gold2);border-style:dashed;border-color:#e6cf98}
+
+/* thẻ trận 2 cột */
+.mlabel{flex:1;min-width:0;border:0;background:transparent;font-family:inherit;font-weight:800;font-size:16px;color:var(--brown);padding:4px 6px;border-radius:9px}
+.mlabel:focus{outline:2px solid #e6cf98;background:#fff}
+.mhead .mno{white-space:nowrap}
+.mhead{gap:4px;padding-right:4px}
+.mhead .iconbtn{width:32px;height:34px}
+.sdot.ok{width:20px;height:20px;font-size:11px}
+.sdot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;font-size:12px;font-weight:900}
+.sdot.ok{background:var(--goodl);color:var(--good)}
+.sdot.run{width:12px;height:12px;margin:0 5px;background:var(--warn);animation:pulse2 1.6s infinite}
+@keyframes pulse2{0%{box-shadow:0 0 0 0 rgba(183,121,31,.5)}70%{box-shadow:0 0 0 7px rgba(183,121,31,0)}100%{box-shadow:0 0 0 0 rgba(183,121,31,0)}}
+.cols{display:grid;grid-template-columns:1fr 1fr}
+.col{padding:12px 10px 12px 12px;min-width:0}
+.col+.col{border-left:1px solid var(--line)}
+.col.won{background:linear-gradient(180deg,var(--tcl),#fff 85%)}
+.col .tn{display:flex;justify-content:space-between;align-items:center;gap:6px;font-family:var(--disp);font-size:13px;font-weight:800;color:var(--tc);margin-bottom:4px}
+.col .picked{font-weight:800;font-size:14.5px;line-height:1.35;min-height:20px;margin-bottom:10px;word-break:break-word}
+.col.lost .picked{color:var(--muted)}
+.col .picked.none{color:#bfae94;font-weight:600;font-size:13px}
+.col .chips{gap:5px}
+.col .chip{font-size:12.5px;padding:5px 10px 5px 5px}
+.score{display:flex;align-items:center;justify-content:center;gap:14px;padding:12px;border-top:1px solid var(--line);background:var(--goldll)}
+.score input{width:80px;height:60px;border-radius:18px;border:2px solid var(--line2);background:#fff;text-align:center;font-family:var(--disp);font-size:30px;font-weight:900;color:var(--ink);-moz-appearance:textfield}
 .score input::-webkit-outer-spin-button,.score input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.score input:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px rgba(124,58,237,.12)}
-.score input.w1{border-color:var(--t1);color:var(--t1)}
-.score input.w2{border-color:var(--t2);color:var(--t2)}
-.score .colon{font-size:22px;font-weight:800;color:#c4b5fd}
-.warnline{font-size:11.5px;color:var(--warn);text-align:center;padding:0 12px 10px;background:#fcfbff}
-.banner{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:14px;padding:12px;font-size:13px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.score input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,161,74,.2)}
+.score input.w{border-color:var(--tc);color:var(--tc)}
+.score .colon{font-family:var(--disp);font-size:24px;font-weight:900;color:var(--gold)}
+.warnline2{font-size:12px;font-weight:700;color:var(--warn);text-align:center;padding:0 12px 10px;background:var(--goldll)}
+
+/* ANALYTICS */
+.plist .pr{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font:inherit;color:inherit}
+.plist .pr:first-child{border-top:0}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:14px;position:relative;
+  background:var(--tcl);border:2px solid var(--tc);color:var(--tc)}
+.av .pos{position:absolute;top:-5px;left:-5px;font-family:var(--disp);font-size:9.5px;font-weight:900;background:var(--brown);color:#f0d999;border-radius:999px;min-width:18px;height:18px;display:grid;place-items:center;padding:0 4px;border:2px solid #fff}
+.pr .n1{font-weight:800;font-size:15.5px;display:flex;align-items:center;gap:6px;min-width:0;color:var(--brown)}
+.pr .n1 span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr .n2{font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:8px;font-weight:600}
+.pr .big{font-family:var(--disp);font-weight:900;font-size:19px;text-align:right;color:var(--brown)}
+.pr .big small{display:block;font-size:10px;color:var(--muted);font-weight:700;margin-top:2px;font-family:"Nunito",sans-serif}
+.form{display:inline-flex;gap:3px}
+.form i{width:16px;height:16px;border-radius:5px;font-style:normal;font-family:var(--disp);font-size:9px;font-weight:900;display:grid;place-items:center}
+.form i.w{background:var(--grad);color:#fff}
+.form i.l{background:#efe6d6;color:var(--muted)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+
+/* SHEET */
+.sheet{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.sheet-in{max-width:640px;margin:0 auto;padding:0 14px calc(30px + env(safe-area-inset-bottom))}
+.shead{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;padding:calc(12px + env(safe-area-inset-top)) 0 12px;background:rgba(250,245,236,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.shead .av{width:52px;height:52px;font-size:16px}
+.shead h2{margin:0;font-family:var(--disp);font-size:20px;font-weight:900;color:var(--brown)}
+.shead .sub{font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:6px;margin-top:2px;font-weight:700}
+.kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kg{background:var(--goldll);border:1px solid var(--line);border-radius:16px;padding:10px}
+.kg b{display:block;font-family:var(--disp);font-size:19px;font-weight:900;color:var(--brown)}
+.kg span{font-size:11px;color:var(--ink2);font-weight:600}
+.kg.hero2{grid-column:span 3;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#fffaf0,#f5e4bd);border-color:#ead7ad}
+.ring{width:88px;height:88px;flex:0 0 auto}
+.cmp{display:grid;gap:9px;margin-top:4px}
+.cmp .ln{display:grid;grid-template-columns:100px 1fr 44px;gap:8px;align-items:center;font-size:12.5px;color:var(--ink2);font-weight:700}
+.cmp .tr{height:9px;border-radius:999px;background:#f1e6d1;overflow:hidden}
+.cmp .tr i{display:block;height:100%;border-radius:999px}
+.cmp .v{font-family:var(--disp);font-weight:800;text-align:right;font-size:12.5px}
+.tip{margin-top:8px;padding:10px 12px;border-radius:14px;background:var(--goldll);border:1px solid var(--line);font-size:13px;line-height:1.5}
+.tip b{font-family:var(--disp)}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font-family:var(--disp);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);text-align:left;font-weight:800;padding:0 0 8px}
+.tbl th:not(:first-child),.tbl td:not(:first-child){text-align:right}
+.tbl td{padding:9px 0;border-top:1px solid var(--line);font-weight:600}
+.tbl td.mono{font-weight:800}
+.ins{display:grid;gap:8px}
+.in{display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;padding:11px 12px;border-radius:16px;border:1px solid var(--line);background:#fff;font-size:14px;line-height:1.5}
+.in .ic{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-size:16px}
+.in.good{background:#f6fbf8;border-color:#cfe8da} .in.good .ic{background:var(--goodl)}
+.in.warn{background:#fffaf0;border-color:#f1dcab} .in.warn .ic{background:var(--warnl)}
+.in.info .ic{background:var(--goldl)}
+.in b{color:var(--brown);font-weight:800}
 
 /* TEAMS / SETTINGS */
-.thead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.thead input{flex:1;font-weight:800;font-size:17px}
-.group{margin-top:10px}
-.group .gt{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.mem{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
-.mem:first-of-type{border-top:0}
-.mem .n{flex:1;font-weight:600;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.addrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-top:12px}
-.tpl{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid var(--line)}
+.thead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.thead input{flex:1;font-family:var(--disp);font-weight:800;font-size:17px}
+.group{margin-top:12px}
+.mem{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
+.mem .n{flex:1;font-weight:700;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.addrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-top:12px;align-items:center}
+.tpl{display:flex;align-items:center;gap:4px;padding:6px 0;border-top:1px solid var(--line)}
 .tpl:first-child{border-top:0}
-.tpl .i{width:24px;height:24px;border-radius:8px;background:var(--pl);color:var(--p2);font-weight:800;font-size:11px;display:grid;place-items:center}
-.tpl .n{flex:1;font-weight:600;font-size:14px}
-.set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.tpl .i{width:26px;height:26px;border-radius:50%;background:var(--goldl);color:var(--gold2);font-family:var(--disp);font-weight:900;font-size:11px;display:grid;place-items:center;flex:0 0 auto}
+.tpl .n{flex:1;font-weight:700;font-size:14px;min-width:0;padding-left:6px}
+.set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)}
 .set:first-of-type{border-top:0}
-.set .t{font-weight:700;font-size:14px}
-.set .d{font-size:11.5px;color:var(--muted)}
-.num{width:76px;text-align:center;font-weight:800}
-a{color:var(--p2)}
+.set .t{font-weight:800;font-size:15px}
+.set .d{font-size:12px;color:var(--muted)}
+.num{width:78px;text-align:center;font-family:var(--disp);font-weight:800}
+a{color:var(--gold2);font-weight:700}
+svg text{font-family:var(--disp)}
 </style>
 </head>
 <body>
@@ -218,15 +348,17 @@ const {useState,useEffect,useMemo,useRef,useCallback}=React;
 
 const ROOT="league_ab";
 const LS_KEY="pb_ab_cache_v1";
-const DEFAULT_TEMPLATE=["Đôi Hạng A","Đôi Hạng B","Hỗn hợp A + B"];
+const DEFAULT_TEMPLATE=["Đôi Hạng A","Đôi Hạng B"];
 const TEAM_COLOR={"1":"var(--t1)","2":"var(--t2)"};
+const TEAM_HEX={"1":"#2563a8","2":"#d0682a"};
+const TEAM_LIGHT={"1":"#e8eff8","2":"#fcede3"};
 
 // ─── DATA HELPERS ────────────────────────────────────────────────────────────
 function blankMatch(label){return{label:label||"",a:[],b:[],sa:"",sb:""};}
 function buildRounds(n,template){return Array.from({length:n},()=>({matches:template.map(blankMatch)}));}
 const DEFAULT_DATA={
   config:{ptsWin:3,template:DEFAULT_TEMPLATE},
-  teams:{"1":{name:"Đội 1",members:[]},"2":{name:"Đội 2",members:[]}},
+  teams:{"1":{name:"Team 1",members:[]},"2":{name:"Team 2",members:[]}},
   rounds:buildRounds(10,DEFAULT_TEMPLATE),
 };
 
@@ -244,7 +376,7 @@ function normalize(d){
   const teams={};
   ["1","2"].forEach(t=>{
     const x=(d.teams||{})[t]||{};
-    teams[t]={name:x.name||("Đội "+t),
+    teams[t]={name:x.name||("Team "+t),
       members:toArr(x.members).filter(m=>m&&m.name).map(m=>({name:String(m.name),rank:m.rank==="B"?"B":"A"}))};
   });
   const rounds=toArr(d.rounds).map(r=>({
@@ -269,7 +401,16 @@ function setIn(obj,path,value){
   return base;
 }
 
-// Đội 1 luôn là bên a, Đội 2 luôn là bên b
+// Tên trận có thể kèm giờ: "Đôi Hạng A · 18:30"
+const TIME_RE=/\s*·?\s*(\d{1,2}:\d{2})\s*$/;
+function timeOf(label){const m=(label||"").match(TIME_RE);return m?m[1]:"";}
+function cleanLabel(label){return(label||"").replace(TIME_RE,"").trim()||"Trận";}
+function rankOfLabel(label){const s=(label||"").toLowerCase();if(/hạng\s*a\b/.test(s)&&!/hạng\s*b\b/.test(s))return"A";if(/hạng\s*b\b/.test(s)&&!/hạng\s*a\b/.test(s))return"B";return null;}
+function initials(n){const p=n.trim().split(/\s+/);return((p.length>1?p[p.length-2][0]:"")+p[p.length-1][0]).toUpperCase();}
+const pctTxt=v=>v==null?"–":Math.round(v*100)+"%";
+const sgn=v=>(v>0?"+":"")+v;
+
+// Team 1 luôn là bên a, Team 2 luôn là bên b
 function winner(m){
   if(m.sa===""||m.sb==="")return null;
   const a=Number(m.sa),b=Number(m.sb);
@@ -290,18 +431,15 @@ function roundWinner(r,s){
 function computeStats(data){
   const P=data.config.ptsWin;
   const total={"1":0,"2":0},wins={"1":0,"2":0};
-  const byLabel={},mem={};
+  const byLabel={};
   let played=0;
   const perRound=data.rounds.map(r=>{
     const s={"1":0,"2":0};
     r.matches.forEach(m=>{
       const w=winner(m);if(!w)return;
       s[w]+=P;total[w]+=P;wins[w]++;played++;
-      const L=(m.label||"").replace(/\s*·?\s*\d{1,2}:\d{2}\s*$/,"").trim()||"Khác"; // bỏ giờ trong tên trận để gộp theo thể thức
+      const L=cleanLabel(m.label);
       byLabel[L]=byLabel[L]||{"1":0,"2":0};byLabel[L][w]++;
-      [["1",m.a],["2",m.b]].forEach(([t,arr])=>arr.forEach(n=>{
-        mem[n]=mem[n]||{w:0,p:0,team:t};mem[n].p++;if(t===w)mem[n].w++;
-      }));
     });
     return s;
   });
@@ -309,11 +447,105 @@ function computeStats(data){
   let roundsDone=0;
   data.rounds.forEach((r,i)=>{
     if(!isDone(r))return;roundsDone++;
-    const s=perRound[i];
-    const w=roundWinner(r,s);
+    const w=roundWinner(r,perRound[i]);
     if(w==="0")roundWins.draw++;else roundWins[w]++;
   });
-  return{P,total,wins,perRound,byLabel,mem,played,roundsDone,roundWins};
+  return{P,total,wins,perRound,byLabel,played,roundsDone,roundWins};
+}
+
+// ─── PHÂN TÍCH THÀNH VIÊN ────────────────────────────────────────────────────
+function analyze(data){
+  const P=data.config.ptsWin;
+  const info={};
+  ["1","2"].forEach(t=>data.teams[t].members.forEach(m=>{info[m.name]={team:t,rank:m.rank};}));
+  const pl={},pairs={};
+  let big=null;
+  const get=(n,t)=>pl[n]||(pl[n]={name:n,team:(info[n]||{}).team||t,rank:(info[n]||{}).rank||"?",games:[],partners:{},opps:{}});
+  data.rounds.forEach((r,ri)=>r.matches.forEach((m,mi)=>{
+    const w=winner(m);if(!w)return;
+    const sa=Number(m.sa),sb=Number(m.sb);
+    if(!big||Math.abs(sa-sb)>big.margin)big={margin:Math.abs(sa-sb),ri,mi,m,w};
+    [["1",m.a,m.b,sa,sb],["2",m.b,m.a,sb,sa]].forEach(([t,mine,theirs,my,th])=>{
+      const won=w===t;
+      if(mine.length>=2){
+        const names=[...mine].sort(),k=names.join(" & ");
+        pairs[k]=pairs[k]||{names,team:t,p:0,w:0};pairs[k].p++;if(won)pairs[k].w++;
+      }
+      mine.forEach(n=>{
+        const x=get(n,t);
+        x.games.push({ri,mi,label:m.label,won,my,th,partners:mine.filter(y=>y!==n),opps:theirs});
+        mine.forEach(y=>{if(y===n)return;const q=x.partners[y]=x.partners[y]||{p:0,w:0};q.p++;if(won)q.w++;});
+        theirs.forEach(y=>{const q=x.opps[y]=x.opps[y]||{p:0,w:0};q.p++;if(won)q.w++;});
+      });
+    });
+  }));
+  Object.keys(info).forEach(n=>get(n,info[n].team));
+  Object.values(pl).forEach(x=>{
+    const g=x.games;
+    x.p=g.length;x.w=g.filter(y=>y.won).length;x.l=x.p-x.w;
+    x.pct=x.p?x.w/x.p:null;
+    x.pf=g.reduce((s,y)=>s+y.my,0);x.pa=g.reduce((s,y)=>s+y.th,0);x.diff=x.pf-x.pa;
+    x.avgF=x.p?x.pf/x.p:0;x.avgA=x.p?x.pa/x.p:0;
+    x.closeW=g.filter(y=>y.won&&y.my-y.th<=2).length;
+    x.closeL=g.filter(y=>!y.won&&y.th-y.my<=2).length;
+    let s=0;for(let i=g.length-1;i>=0&&g[i].won===g[g.length-1].won;i--)s++;
+    x.streak=g.length?{won:g[g.length-1].won,n:s}:null;
+    x.form=g.slice(-5).map(y=>y.won);
+    x.formW=x.form.filter(Boolean).length;
+    x.pts=x.w*P;
+  });
+  const rankAvg={};
+  ["A","B"].forEach(r=>{
+    const xs=Object.values(pl).filter(x=>x.rank===r);
+    const p=xs.reduce((s,x)=>s+x.p,0),w=xs.reduce((s,x)=>s+x.w,0);
+    rankAvg[r]=p?w/p:null;
+  });
+  return{pl,pairs,big,rankAvg,P};
+}
+
+function insights(x,an){
+  const out=[];
+  const add=(tone,ic,html)=>out.push({tone,ic,html});
+  if(!x.p){add("info","🕒","Chưa thi đấu trận nào — phân tích sẽ xuất hiện sau trận đầu tiên.");return out;}
+  if(x.p<3)add("info","📊",`Mới có <b>${x.p} trận</b> — số liệu chưa đủ tin cậy, cần thêm ít nhất 3 trận.`);
+
+  if(x.streak&&x.streak.n>=3)
+    x.streak.won?add("good","🔥",`Đang có <b>chuỗi ${x.streak.n} trận thắng</b> liên tiếp — giữ nguyên cặp đang ăn ý.`)
+                :add("warn","🧊",`Đang <b>thua ${x.streak.n} trận liên tiếp</b> — cân nhắc đổi cặp hoặc điều chỉnh lối đánh.`);
+
+  if(x.p>=6){
+    const rec=x.games.slice(-4),rp=rec.filter(g=>g.won).length/rec.length;
+    if(rp-x.pct>=0.25)add("good","📈",`Phong độ <b>đang lên</b>: thắng ${Math.round(rp*100)}% trong 4 trận gần nhất (cả giải ${pctTxt(x.pct)}).`);
+    else if(x.pct-rp>=0.25)add("warn","📉",`Phong độ <b>đi xuống</b>: chỉ thắng ${Math.round(rp*100)}% trong 4 trận gần nhất (cả giải ${pctTxt(x.pct)}).`);
+  }
+
+  const avg=an.rankAvg[x.rank];
+  if(avg!=null&&x.p>=3){
+    const d=Math.round((x.pct-avg)*100);
+    if(d>=15)add("good","⭐",`Tỉ lệ thắng <b>cao hơn ${d}%</b> so với mặt bằng Hạng ${x.rank} (${pctTxt(avg)}).`);
+    else if(d<=-15)add("warn","🎯",`Tỉ lệ thắng <b>thấp hơn ${-d}%</b> so với mặt bằng Hạng ${x.rank} (${pctTxt(avg)}).`);
+  }
+  if(x.p>=6&&x.rank==="B"&&x.pct>=0.75)add("good","⬆️",`Thắng ${pctTxt(x.pct)} sau ${x.p} trận — có thể cân nhắc <b>lên Hạng A</b>.`);
+  if(x.p>=6&&x.rank==="A"&&x.pct<=0.3)add("warn","⬇️",`Chỉ thắng ${pctTxt(x.pct)} sau ${x.p} trận — có thể cân nhắc <b>xếp Hạng B</b> để cân bằng.`);
+
+  const ps=Object.entries(x.partners).filter(([,q])=>q.p>=2);
+  if(ps.length){
+    const best=[...ps].sort((a,b)=>b[1].w/b[1].p-a[1].w/a[1].p||b[1].p-a[1].p)[0];
+    const worst=[...ps].sort((a,b)=>a[1].w/a[1].p-b[1].w/b[1].p||b[1].p-a[1].p)[0];
+    if(best[1].w/best[1].p>=0.6)add("good","🤝",`Ăn ý nhất khi đánh cùng <b>${best[0]}</b> (thắng ${best[1].w}/${best[1].p}) — nên ưu tiên xếp cặp.`);
+    if(worst[0]!==best[0]&&worst[1].w/worst[1].p<=0.34)add("warn","🔁",`Hiệu quả thấp khi đánh cùng <b>${worst[0]}</b> (thắng ${worst[1].w}/${worst[1].p}) — thử đổi cặp.`);
+  }
+  const os=Object.entries(x.opps).filter(([,q])=>q.p>=2).sort((a,b)=>a[1].w/a[1].p-b[1].w/b[1].p||b[1].p-a[1].p);
+  if(os.length&&os[0][1].w/os[0][1].p<=0.34)add("warn","🛡️",`Hay gặp khó trước <b>${os[0][0]}</b> (chỉ thắng ${os[0][1].w}/${os[0][1].p}) — nên chuẩn bị chiến thuật riêng.`);
+  if(os.length&&os[os.length-1][1].w/os[os.length-1][1].p>=0.75)add("good","💪",`Đánh rất tốt khi gặp <b>${os[os.length-1][0]}</b> (thắng ${os[os.length-1][1].w}/${os[os.length-1][1].p}).`);
+
+  if(x.closeL>=2&&x.closeL>x.closeW)add("warn","⏱️",`Thua sát nút <b>${x.closeL} trận</b> (cách ≤2 điểm) — tập trung giữ tâm lý ở các điểm cuối.`);
+  else if(x.closeW>=2&&x.closeW>x.closeL)add("good","🧠",`Bản lĩnh ở trận sát nút: thắng <b>${x.closeW}</b>, thua ${x.closeL} trận cách ≤2 điểm.`);
+
+  if(x.p>=3&&x.pct<0.5&&x.avgA>=9)add("info","🏓",`Đối thủ ghi trung bình <b>${x.avgA.toFixed(1)} điểm/trận</b> — cải thiện giao bóng & trả giao để hạn chế điểm mất.`);
+  if(x.p>=3&&x.diff>=x.p*4)add("good","🚀",`Thắng áp đảo: hiệu số trung bình <b>${sgn(+(x.diff/x.p).toFixed(1))} điểm/trận</b>.`);
+  if(out.length===0||(out.length===1&&out[0].tone==="info"&&x.p>=3))add("info","✅",`Phong độ ổn định quanh mức ${pctTxt(x.pct)} — chưa có điểm bất thường cần lưu ý.`);
+  return out;
 }
 
 // ─── FIREBASE HOOK ───────────────────────────────────────────────────────────
@@ -359,8 +591,9 @@ function useLeague(){
 
 // ─── ICONS ───────────────────────────────────────────────────────────────────
 const Svg=({children})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{children}</svg>;
-const IcChart=()=><Svg><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></Svg>;
+const IcHome=()=><Svg><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></Svg>;
 const IcEdit=()=><Svg><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></Svg>;
+const IcChart=()=><Svg><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></Svg>;
 const IcUsers=()=><Svg><circle cx="9" cy="7" r="4"/><path d="M2 21v-1a6 6 0 0112 0v1"/><path d="M16 3.1a4 4 0 010 7.8"/><path d="M22 21v-1a6 6 0 00-4-5.6"/></Svg>;
 const IcSliders=()=><Svg><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></Svg>;
 const IcTrash=()=><Svg><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></Svg>;
@@ -369,114 +602,143 @@ const IcUp=()=><Svg><path d="M18 15l-6-6-6 6"/></Svg>;
 const IcDown=()=><Svg><path d="M6 9l6 6 6-6"/></Svg>;
 const IcLeft=()=><Svg><path d="M15 18l-6-6 6-6"/></Svg>;
 const IcRight=()=><Svg><path d="M9 18l6-6-6-6"/></Svg>;
+const IcX=()=><Svg><path d="M18 6L6 18M6 6l12 12"/></Svg>;
 
-// ─── HERO ────────────────────────────────────────────────────────────────────
-function Hero({data,st,status}){
-  const lead=st.total["1"]===st.total["2"]?null:(st.total["1"]>st.total["2"]?"1":"2");
-  const S={live:["#4ade80","Realtime"],connecting:["#fbbf24","Đang kết nối"],offline:["#f87171","Offline"]}[status];
-  const Side=({t})=>(
-    <div className="side">
-      <div className="nm"><span className="tdot" style={{background:TEAM_COLOR[t],boxShadow:"0 0 0 2px rgba(255,255,255,.5)"}}/><span>{data.teams[t].name}</span></div>
-      <div className="pts">{st.total[t]}</div>
-      <div className="sub">{st.wins[t]} trận thắng</div>
-      <div className="lead" style={{visibility:lead===t?"visible":"hidden"}}>Dẫn đầu</div>
-    </div>
-  );
+const Form=({f})=><span className="form">{f.map((w,i)=><i key={i} className={w?"w":"l"}>{w?"T":"B"}</i>)}</span>;
+const Avatar=({x,pos})=>(
+  <div className="av" style={{"--tc":TEAM_HEX[x.team]||"#c9a14a","--tcl":TEAM_LIGHT[x.team]||"#f6ebd3"}}>{initials(x.name)}{pos!=null&&<span className="pos">{pos}</span>}</div>
+);
+
+// ─── TOP BAR ─────────────────────────────────────────────────────────────────
+function TopBar({data,st,status,tab}){
+  const S={live:["on","Live"],connecting:["","Kết nối"],offline:["","Offline"]}[status];
   return(
-    <header className="hero">
-      <div className="hero-top">
-        <div className="brand"><small>Hạng A · Hạng B</small><h1>Edutalk Pickleball League</h1></div>
-        <div className="pill"><span className="dot" style={{background:S[0]}}/>{S[1]}</div>
-      </div>
-      <div className="board"><Side t="1"/><div className="vs">VS</div><Side t="2"/></div>
-      <div className="meta">
-        <div><b>{st.roundsDone}/{data.rounds.length}</b><span>Vòng hoàn thành</span></div>
-        <div><b>{st.played}</b><span>Trận đã đấu</span></div>
-        <div><b>{st.roundWins["1"]} – {st.roundWins["2"]}</b><span>Vòng thắng</span></div>
-      </div>
+    <header className="top">
+      <div className="logo">E</div>
+      <div className="brand"><small>Edutalk</small><b>Pickleball League</b></div>
+      {tab!=="home"
+        ?<div className="miniscore"><span className="tdot" style={{background:"var(--t1)"}}/>{st.total["1"]}<span className="muted">:</span>{st.total["2"]}<span className="tdot" style={{background:"var(--t2)"}}/></div>
+        :<div className="live"><i className={S[0]} style={S[0]?null:{background:status==="offline"?"#c2410c":"var(--warn)"}}/>{S[1]}</div>}
     </header>
   );
 }
 
 // ─── OVERVIEW ────────────────────────────────────────────────────────────────
-function Overview({data,st,go}){
-  const [rk,setRk]=useState("all");
-  const [sort,setSort]=useState("rate");
+function Overview({data,st,an,go,openMember}){
   const t1=data.teams["1"].name,t2=data.teams["2"].name;
+  const lead=st.total["1"]===st.total["2"]?null:(st.total["1"]>st.total["2"]?"1":"2");
+  const wt=st.wins["1"]+st.wins["2"];
 
-  const rounds=data.rounds.map((r,i)=>({i,s:st.perRound[i],done:isDone(r),any:hasScore(r)})).filter(x=>x.any);
+  const side=t=>(
+    <div className="side">
+      <div className="nm"><span className="tdot" style={{background:TEAM_COLOR[t]}}/>{data.teams[t].name}</div>
+      <div className="pts" style={{color:TEAM_COLOR[t]}}>{st.total[t]}</div>
+      <div className="sub">{st.wins[t]} trận thắng</div>
+      <div className="lead" style={{visibility:lead===t?"visible":"hidden"}}>DẪN ĐẦU</div>
+    </div>
+  );
 
-  const labels=useMemo(()=>{
-    const keys=Object.keys(st.byLabel);
-    const order=data.config.template;
-    return keys.sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
-  },[st.byLabel,data.config.template]);
-
-  const members=useMemo(()=>{
-    const arr=[];
-    ["1","2"].forEach(t=>data.teams[t].members.forEach(m=>{
-      const s=st.mem[m.name]||{w:0,p:0};arr.push({name:m.name,rank:m.rank,team:t,w:s.w,p:s.p});
-    }));
-    Object.entries(st.mem).forEach(([n,s])=>{if(!arr.find(x=>x.name===n))arr.push({name:n,rank:"?",team:s.team,w:s.w,p:s.p});});
-    const rate=x=>x.p?x.w/x.p:-1;
-    return arr.filter(x=>rk==="all"||x.rank===rk).sort((a,b)=>
-      sort==="rate"?(rate(b)-rate(a)||b.w-a.w||b.p-a.p):(b.w-a.w||rate(b)-rate(a)));
-  },[data.teams,st.mem,rk,sort]);
-
-  const noMembers=!data.teams["1"].members.length&&!data.teams["2"].members.length;
-  if(noMembers&&!st.played){
-    return(
-      <div className="card empty">
-        <div style={{fontSize:34}}>🏓</div>
-        <div style={{fontWeight:800,color:"var(--ink)",fontSize:16,marginTop:4}}>Bắt đầu giải đấu mới</div>
-        <div className="steps">
-          <div><b>1.</b> Vào tab <b>Đội</b> để thêm thành viên & xếp Hạng A / Hạng B</div>
-          <div><b>2.</b> Vào <b>Cài đặt</b> để chỉnh thể thức các trận trong mỗi vòng</div>
-          <div><b>3.</b> Vào <b>Nhập liệu</b> để chọn người đánh & nhập tỉ số</div>
-        </div>
-        <button className="btn block" style={{marginTop:14}} onClick={()=>go("teams")}>Thêm thành viên</button>
-      </div>
-    );
+  // trận tiếp theo
+  let nx=null;
+  for(let ri=0;ri<data.rounds.length&&!nx;ri++){
+    const mi=data.rounds[ri].matches.findIndex(m=>!winner(m));
+    if(mi>=0)nx={ri,mi,m:data.rounds[ri].matches[mi]};
   }
 
+  const ps=Object.values(an.pl).filter(x=>x.p>0);
+  const mvp=[...ps].sort((a,b)=>b.w-a.w||b.pct-a.pct||b.diff-a.diff)[0];
+  const pairList=Object.values(an.pairs);
+  const minP=pairList.some(p=>p.p>=2)?2:1;
+  const bestPair=pairList.filter(p=>p.p>=minP).sort((a,b)=>b.w/b.p-a.w/a.p||b.w-a.w)[0];
+  const hot=ps.filter(x=>x.streak&&x.streak.won).sort((a,b)=>b.streak.n-a.streak.n||b.w-a.w)[0];
+  const big=an.big;
+
+  const rounds=data.rounds.map((r,i)=>({i,s:st.perRound[i],done:isDone(r),any:hasScore(r),r})).filter(x=>x.any);
+  const labels=Object.keys(st.byLabel);
+
+  const noMembers=!data.teams["1"].members.length&&!data.teams["2"].members.length;
+
   return(<>
+    <section className="hero">
+      <div className="hero-title">★ Tổng điểm giải ★</div>
+      <div className="board">{side("1")}<div className="vs">VS</div>{side("2")}</div>
+      <div className="share">
+        <div className="lab"><span>Tỉ lệ thắng trận</span><span><b>{wt?Math.round(st.wins["1"]/wt*100):0}%</b> · <b>{wt?Math.round(st.wins["2"]/wt*100):0}%</b></span></div>
+        <div className="split">
+          {wt>0?<><i style={{width:st.wins["1"]/wt*100+"%",background:"var(--t1)"}}/><i style={{width:st.wins["2"]/wt*100+"%",background:"var(--t2)"}}/></>:null}
+        </div>
+      </div>
+      <div className="kpis">
+        <div className="kpi"><b>{st.roundsDone}<span className="muted" style={{fontSize:12}}>/{data.rounds.length}</span></b><span>Vòng xong</span></div>
+        <div className="kpi"><b>{st.played}</b><span>Trận đã đấu</span></div>
+        <div className="kpi"><b>{st.roundWins["1"]}–{st.roundWins["2"]}</b><span>Vòng thắng</span></div>
+      </div>
+    </section>
+
+    {noMembers&&<div className="card empty">
+      <div style={{fontWeight:800,color:"var(--ink)",fontSize:16}}>Bắt đầu giải đấu</div>
+      <div style={{margin:"6px 0 14px"}}>Thêm thành viên và xếp Hạng A / B ở tab Đội.</div>
+      <button className="btn block" onClick={()=>go("teams")}>Thêm thành viên</button>
+    </div>}
+
+    {nx&&!noMembers&&<div className="card next">
+      <div className="ch"><span className="eyebrow">▶ Trận tiếp theo</span><span className="mono muted" style={{fontSize:11}}>V{nx.ri+1} · #{nx.mi+1}{timeOf(nx.m.label)?" · "+timeOf(nx.m.label):""}</span></div>
+      <div style={{fontWeight:800,fontSize:15,marginBottom:8}}>{cleanLabel(nx.m.label)}</div>
+      <div className="vsrow">
+        <div className="pr" style={{color:"var(--t1)"}}>{nx.m.a.length?nx.m.a.join(" & "):"Chưa chọn"}</div>
+        <div className="x">VS</div>
+        <div className="pr" style={{color:"var(--t2)"}}>{nx.m.b.length?nx.m.b.join(" & "):"Chưa chọn"}</div>
+      </div>
+      <button className="btn block" onClick={()=>go("entry")}>Nhập kết quả →</button>
+    </div>}
+
+    {st.played>0&&<div className="card">
+      <div className="ch"><h2>Điểm nhấn</h2><span className="hint">Cập nhật realtime</span></div>
+      <div className="hl">
+        {mvp&&<button className="hlc" onClick={()=>openMember(mvp.name)}><div className="ic">👑</div><div className="k">MVP</div><div className="v">{mvp.name}</div><div className="s mono">{mvp.w} thắng · {pctTxt(mvp.pct)}</div></button>}
+        {bestPair&&<div className="hlc"><div className="ic">🤝</div><div className="k">Cặp ăn ý</div><div className="v">{bestPair.names.join(" & ")}</div><div className="s mono">{bestPair.w}/{bestPair.p} thắng</div></div>}
+        {hot?<button className="hlc" onClick={()=>openMember(hot.name)}><div className="ic">🔥</div><div className="k">Đang hưng phấn</div><div className="v">{hot.name}</div><div className="s mono">chuỗi {hot.streak.n} thắng</div></button>
+            :<div className="hlc"><div className="ic">🔥</div><div className="k">Đang hưng phấn</div><div className="v muted">—</div><div className="s">Chưa có chuỗi thắng</div></div>}
+        {big&&<div className="hlc"><div className="ic">⚡</div><div className="k">Thắng đậm nhất</div><div className="v">{(big.w==="1"?big.m.a:big.m.b).join(" & ")||data.teams[big.w].name}</div><div className="s mono">{big.m.sa}–{big.m.sb} · V{big.ri+1}</div></div>}
+      </div>
+    </div>}
+
     <div className="card">
-      <h2>Điểm từng vòng <span className="hint">Thắng 1 trận = {st.P} điểm</span></h2>
+      <div className="ch"><h2>Điểm từng vòng</h2><span className="hint">Thắng 1 trận = {st.P} điểm</span></div>
       {rounds.length===0&&<div className="empty">Chưa có vòng nào có kết quả</div>}
-      {rounds.map(({i,s,done})=>{
+      {rounds.map(({i,s,done,r})=>{
         const tot=s["1"]+s["2"];
-        const w=done?roundWinner(data.rounds[i],s):null;
+        const w=done?roundWinner(r,s):null;
+        const tie=done&&s["1"]===s["2"];
         return(
           <div className="rrow" key={i}>
-            <div className="rnum">Vòng {i+1}</div>
-            <div className={"rv"+(w&&w!=="1"?" dim":"")} style={{color:"var(--t1)"}}>{s["1"]}</div>
+            <div className="rnum">VÒNG {i+1}</div>
+            <div className={"rv"+(w&&w!=="1"?" dim":"")}>{s["1"]}</div>
             <div className="split">
               {tot>0&&<i style={{width:(s["1"]/tot*100)+"%",background:"var(--t1)"}}/>}
               {tot>0&&<i style={{width:(s["2"]/tot*100)+"%",background:"var(--t2)"}}/>}
             </div>
-            <div className={"rv"+(w&&w!=="2"?" dim":"")} style={{color:"var(--t2)"}}>{s["2"]}</div>
-            <div className="rw" title={done?"Hoàn thành":"Đang đấu"}>{done?(w==="0"?"🤝":"✅"):"⏳"}</div>
+            <div className={"rv"+(w&&w!=="2"?" dim":"")}>{s["2"]}</div>
+            {done
+              ?<span className={"badge "+(w==="0"?"b-draw":"b-ok")} title={tie?"Hoà điểm, phân định bằng hiệu số":""}>{w==="0"?"HOÀ":(tie?"HS ":"")+"T"+w}</span>
+              :<span className="badge b-live">LIVE</span>}
           </div>
         );
       })}
-      <div className="legend" style={{marginTop:10}}>
-        <span><span className="tdot" style={{background:"var(--t1)"}}/>{t1}</span>
-        <span><span className="tdot" style={{background:"var(--t2)"}}/>{t2}</span>
-        <span>✅ xong · ⏳ đang đấu</span>
+      <div className="legend">
+        <span><span className="sw" style={{background:"var(--t1)"}}/>{t1}</span>
+        <span><span className="sw" style={{background:"var(--t2)"}}/>{t2}</span>
+        <span>T1/T2 = đội thắng vòng · HS = thắng nhờ hiệu số</span>
       </div>
     </div>
 
     {labels.length>0&&<div className="card">
-      <h2>Theo thể thức <span className="hint">Số trận thắng</span></h2>
+      <div className="ch"><h2>Theo thể thức</h2><span className="hint">Số trận thắng</span></div>
       {labels.map(L=>{
         const x=st.byLabel[L],tot=x["1"]+x["2"];
         return(
           <div className="lrow" key={L}>
-            <div className="top">
-              <span style={{color:"var(--t1)"}}>{x["1"]}</span>
-              <span>{L}</span>
-              <span style={{color:"var(--t2)"}}>{x["2"]}</span>
-            </div>
+            <div className="top2"><span className="mono" style={{color:"var(--t1)"}}>{x["1"]}</span><span>{L}</span><span className="mono" style={{color:"var(--t2)"}}>{x["2"]}</span></div>
             <div className="split">
               <i style={{width:(x["1"]/tot*100)+"%",background:"var(--t1)"}}/>
               <i style={{width:(x["2"]/tot*100)+"%",background:"var(--t2)"}}/>
@@ -485,55 +747,27 @@ function Overview({data,st,go}){
         );
       })}
     </div>}
-
-    <div className="card">
-      <h2>Thành viên
-        <div className="seg">
-          {[["rate","Tỉ lệ"],["wins","Số thắng"]].map(([k,l])=><button key={k} className={sort===k?"on":""} onClick={()=>setSort(k)}>{l}</button>)}
-        </div>
-      </h2>
-      <div className="seg" style={{marginBottom:6}}>
-        {[["all","Tất cả"],["A","Hạng A"],["B","Hạng B"]].map(([k,l])=><button key={k} className={rk===k?"on":""} onClick={()=>setRk(k)}>{l}</button>)}
-      </div>
-      {members.length===0&&<div className="empty">Không có thành viên</div>}
-      {members.map((m,i)=>{
-        const pct=m.p?Math.round(m.w/m.p*100):null;
-        const col=pct==null?"#d4d0e2":pct>=70?"#16a34a":pct>=50?"#7c3aed":"#f97316";
-        return(
-          <div className="mrow" key={m.name}>
-            <div className={"pos"+(i<3&&m.p?" g":"")}>{i<3&&m.p?["🥇","🥈","🥉"][i]:i+1}</div>
-            <div style={{minWidth:0}}>
-              <div className="nm">
-                <span className="tdot" style={{background:TEAM_COLOR[m.team]}}/>
-                <span className="t">{m.name}</span>
-                {m.rank!=="?"&&<span className={"rk "+m.rank}>{m.rank}</span>}
-              </div>
-              <div className="s">{m.p?`${m.w} thắng / ${m.p} trận · ${m.w*st.P} điểm`:"Chưa thi đấu"}</div>
-              <div className="bar"><i style={{width:(pct||0)+"%",background:col}}/></div>
-            </div>
-            <div className="pct" style={{color:pct==null?"#b8b3cc":col}}>{pct==null?"–":pct+"%"}<small>{m.w}T</small></div>
-          </div>
-        );
-      })}
-    </div>
   </>);
 }
 
 // ─── ENTRY ───────────────────────────────────────────────────────────────────
-function Picker({team,t,sel,onChange}){
-  const ms=[...team.members].sort((a,b)=>a.rank.localeCompare(b.rank));
+function Picker({team,t,sel,onChange,rank}){
+  const [all,setAll]=useState(!rank);
+  const ms=[...team.members].sort((a,b)=>a.rank.localeCompare(b.rank))
+    .filter(m=>all||m.rank===rank||sel.includes(m.name));
   const tog=n=>{
     if(sel.includes(n))onChange(sel.filter(x=>x!==n));
     else onChange(sel.length>=2?[sel[1],n]:[...sel,n]);
   };
   return(
-    <div className="chips">
+    <div className="chips" style={{"--tc":TEAM_HEX[t]}}>
       {ms.map(m=>(
-        <button key={m.name} className={"chip"+(sel.includes(m.name)?" on"+t:"")} onClick={()=>tog(m.name)}>
+        <button key={m.name} className={"chip"+(sel.includes(m.name)?" on":"")} onClick={()=>tog(m.name)}>
           <span className={"rk "+m.rank}>{m.rank}</span>{m.name}
         </button>
       ))}
-      {!ms.length&&<span className="muted" style={{fontSize:12}}>Chưa có thành viên</span>}
+      {rank&&<button className="chip more" onClick={()=>setAll(!all)}>{all?"Chỉ Hạng "+rank:"+ Hạng khác"}</button>}
+      {!team.members.length&&<span className="muted" style={{fontSize:12}}>Chưa có thành viên</span>}
     </div>
   );
 }
@@ -546,40 +780,42 @@ function MatchCard({m,mi,ri,data,save,isNext,onDelete}){
   const base=["rounds",ri,"matches",mi];
   const P=data.config.ptsWin;
   const tie=m.sa!==""&&m.sb!==""&&Number(m.sa)===Number(m.sb);
-  const Side=({t})=>{
-    const key=t==="1"?"a":"b";
-    const won=w===t;
+
+  // gọi như hàm (không phải <Col/>) để không bị dựng lại component mỗi lần gõ
+  const col=t=>{
+    const key=t==="1"?"a":"b",won=w===t;
     return(
-      <div className={"mside"+(won?" win"+t:"")}>
+      <div className={"col"+(won?" won":"")+(w&&!won?" lost":"")} style={{"--tc":TEAM_HEX[t],"--tcl":TEAM_LIGHT[t]}}>
         <div className="tn">
-          <span style={{color:TEAM_COLOR[t]}}>{data.teams[t].name}</span>
-          {won&&<span className="wl" style={{background:TEAM_COLOR[t]}}>+{P}</span>}
+          <span>{data.teams[t].name}</span>
+          {won&&<span className="plus">+{P}</span>}
         </div>
         <div className={"picked"+(m[key].length?"":" none")}>{m[key].length?m[key].join(" & "):"Chọn người đánh"}</div>
-        {open&&<Picker team={data.teams[t]} t={t} sel={m[key]} onChange={v=>save([...base,key],v)}/>}
+        {open&&<Picker team={data.teams[t]} t={t} sel={m[key]} rank={null} onChange={v=>save([...base,key],v)}/>}
       </div>
     );
   };
+
   return(
-    <div className={"match"+(isNext?" next":"")}>
+    <div className={"match"+(isNext?" is-next":"")}>
       <div className="mhead">
         <span className="mno">Trận {mi+1}</span>
-        <input className="mlabel" value={label} placeholder="Tên thể thức"
+        <input className="mlabel" value={label} placeholder="Tên trận"
           onChange={e=>setLabel(e.target.value)}
           onBlur={()=>{if(label!==m.label)save([...base,"label"],label);}}/>
-        {w?<span className="tag ok">Xong</span>:isNext?<span className="tag live">Đang đấu</span>:null}
-        <button className="iconbtn" title={open?"Thu gọn":"Đổi người"} onClick={()=>setOpen(!open)}>{open?<IcUp/>:<IcPen/>}</button>
-        <button className="iconbtn" title="Xoá trận" onClick={onDelete}><IcTrash/></button>
+        {w?<span className="sdot ok" title="Đã xong">✓</span>:isNext?<span className="sdot run" title="Đang đấu"/>:null}
+        <button className="iconbtn" aria-label={open?"Thu gọn":"Đổi người"} title={open?"Thu gọn":"Đổi người"} onClick={()=>setOpen(!open)}>{open?<IcUp/>:<IcPen/>}</button>
+        <button className="iconbtn" aria-label="Xoá trận" onClick={onDelete}><IcTrash/></button>
       </div>
-      <div className="mbody"><Side t="1"/><Side t="2"/></div>
+      <div className="cols">{col("1")}{col("2")}</div>
       <div className="score">
-        <input type="number" inputMode="numeric" min="0" value={m.sa} className={w==="1"?"w1":""} placeholder="0"
+        <input type="number" inputMode="numeric" min="0" value={m.sa} placeholder="0" className={w==="1"?"w":""} style={{"--tc":TEAM_HEX["1"]}}
           onChange={e=>save([...base,"sa"],e.target.value)}/>
         <span className="colon">:</span>
-        <input type="number" inputMode="numeric" min="0" value={m.sb} className={w==="2"?"w2":""} placeholder="0"
+        <input type="number" inputMode="numeric" min="0" value={m.sb} placeholder="0" className={w==="2"?"w":""} style={{"--tc":TEAM_HEX["2"]}}
           onChange={e=>save([...base,"sb"],e.target.value)}/>
       </div>
-      {tie&&<div className="warnline">Tỉ số đang hoà — trận chưa được tính điểm</div>}
+      {tie&&<div className="warnline2">Tỉ số đang hoà — trận chưa được tính điểm</div>}
     </div>
   );
 }
@@ -611,49 +847,44 @@ function Entry({data,save,loaded,go}){
   const doneN=r.matches.filter(m=>winner(m)).length;
   const nextI=r.matches.findIndex(m=>!winner(m));
   const noMembers=!data.teams["1"].members.length||!data.teams["2"].members.length;
-  const status=isDone(r)?["ok","Hoàn thành"]:hasScore(r)?["live","Đang đấu"]:["idle","Chưa bắt đầu"];
+  const status=isDone(r)?["b-ok","HOÀN THÀNH"]:hasScore(r)?["b-live","ĐANG ĐẤU"]:["b-idle","CHƯA ĐẤU"];
+  const diff=roundDiff(r);
 
   const addMatch=()=>{
     const tp=data.config.template;
     save(["rounds",idx,"matches"],[...r.matches,blankMatch(tp[r.matches.length%tp.length]||"")]);
   };
   const delMatch=mi=>{
-    if(!confirm(`Xoá Trận ${mi+1} của Vòng ${idx+1}?`))return;
+    if(!confirm(`Xoá trận #${mi+1} của Vòng ${idx+1}?`))return;
     save(["rounds",idx,"matches"],r.matches.filter((_,j)=>j!==mi));
   };
 
   return(<>
     {noMembers&&<div className="banner"><span>Một đội chưa có thành viên.</span><button className="btn sm" onClick={()=>go("teams")}>Thêm ngay</button></div>}
-    <div className="card" style={{padding:"14px 12px"}}>
+    <div className="card" style={{padding:"12px 10px"}}>
       <div className="rstrip" ref={stripRef}>
         {data.rounds.map((x,i)=>{
           const cls=i===idx?" on":isDone(x)?" done":hasScore(x)?" part":"";
-          return <button key={i} className={"rchip"+cls} onClick={()=>setRi(i)}><small>Vòng</small>{i+1}</button>;
+          return <button key={i} className={"rchip"+cls} onClick={()=>setRi(i)}><small>VÒNG</small>{i+1}</button>;
         })}
-      </div>
-      <div className="legend">
-        <span><span className="dot" style={{background:"var(--p)"}}/>Đã xong</span>
-        <span><span className="dot" style={{background:"var(--warn)"}}/>Đang nhập</span>
       </div>
     </div>
 
     <div className="card">
       <div className="rhead">
-        <button className="iconbtn" disabled={idx===0} onClick={()=>setRi(idx-1)}><IcLeft/></button>
+        <button className="iconbtn" aria-label="Vòng trước" disabled={idx===0} onClick={()=>setRi(idx-1)}><IcLeft/></button>
         <h3>Vòng {idx+1}</h3>
-        <span className={"tag "+status[0]}>{status[1]}</span>
-        <button className="iconbtn" disabled={idx===data.rounds.length-1} onClick={()=>setRi(idx+1)}><IcRight/></button>
+        <span className={"badge "+status[0]}>{status[1]}</span>
+        <button className="iconbtn" aria-label="Vòng sau" disabled={idx===data.rounds.length-1} onClick={()=>setRi(idx+1)}><IcRight/></button>
       </div>
-      <div className="mini">
-        <div className="s"><div style={{color:"var(--t1)"}}>{data.teams["1"].name}</div><b style={{color:"var(--t1)"}}>{s["1"]}</b></div>
-        <div className="c">ĐIỂM VÒNG</div>
-        <div className="s"><div style={{color:"var(--t2)"}}>{data.teams["2"].name}</div><b style={{color:"var(--t2)"}}>{s["2"]}</b></div>
+      <div className="duel">
+        <div className="s"><div>{data.teams["1"].name}</div><b style={{color:"var(--t1)"}}>{s["1"]}</b></div>
+        <div className="c">ĐIỂM</div>
+        <div className="s"><div>{data.teams["2"].name}</div><b style={{color:"var(--t2)"}}>{s["2"]}</b></div>
       </div>
       <div className="prog"><i style={{width:(r.matches.length?doneN/r.matches.length*100:0)+"%"}}/></div>
-      <div className="muted" style={{fontSize:11.5,marginTop:6,textAlign:"center"}}>
-        {doneN}/{r.matches.length} trận đã có kết quả · Hiệu số điểm: {roundDiff(r)>0?"+":""}{roundDiff(r)} cho {data.teams["1"].name}
-        {s["1"]===s["2"]&&doneN>0&&<div style={{color:"var(--warn)",fontWeight:700,marginTop:3}}>Đang hoà điểm vòng → phân định bằng hiệu số</div>}
-      </div>
+      <div className="rmeta"><span><b>{doneN}/{r.matches.length}</b> trận xong</span><span>Hiệu số <b>{sgn(diff)}</b> cho {data.teams["1"].name}</span></div>
+      {s["1"]===s["2"]&&doneN>0&&<div className="rmeta" style={{color:"var(--warn)",fontWeight:700}}>Đang hoà điểm vòng → phân định bằng hiệu số</div>}
     </div>
 
     {r.matches.map((m,mi)=>(
@@ -662,6 +893,215 @@ function Entry({data,save,loaded,go}){
     ))}
     <button className="btn ghost block" onClick={addMatch}>+ Thêm trận vào vòng {idx+1}</button>
   </>);
+}
+
+// ─── ANALYTICS ───────────────────────────────────────────────────────────────
+function Analytics({data,an,openMember}){
+  const [team,setTeam]=useState("all");
+  const [rk,setRk]=useState("all");
+  const [sort,setSort]=useState("pct");
+  const list=Object.values(an.pl)
+    .filter(x=>(team==="all"||x.team===team)&&(rk==="all"||x.rank===rk))
+    .sort((a,b)=>{
+      if(!a.p!==!b.p)return a.p?-1:1;
+      if(sort==="pct")return(b.pct||0)-(a.pct||0)||b.w-a.w;
+      if(sort==="w")return b.w-a.w||(b.pct||0)-(a.pct||0);
+      if(sort==="diff")return b.diff-a.diff;
+      return b.formW-a.formW||(b.pct||0)-(a.pct||0);
+    });
+  const SORTS=[["pct","Tỉ lệ thắng"],["w","Số thắng"],["diff","Hiệu số"],["form","Phong độ"]];
+  return(<>
+    <div className="card">
+      <div className="ch"><h2>Phân tích thành viên</h2><span className="hint">Chạm để xem chi tiết</span></div>
+      <div className="filters">
+        <div className="seg">
+          {[["all","Tất cả"],["1",data.teams["1"].name],["2",data.teams["2"].name]].map(([k,l])=><button key={k} className={team===k?"on":""} onClick={()=>setTeam(k)}>{l}</button>)}
+        </div>
+        <div className="seg">
+          {[["all","A+B"],["A","Hạng A"],["B","Hạng B"]].map(([k,l])=><button key={k} className={rk===k?"on":""} onClick={()=>setRk(k)}>{l}</button>)}
+        </div>
+      </div>
+      <div className="lbl">Xếp theo</div>
+      <div className="seg full" style={{marginBottom:6}}>
+        {SORTS.map(([k,l])=><button key={k} className={sort===k?"on":""} onClick={()=>setSort(k)}>{l}</button>)}
+      </div>
+      <div className="plist">
+        {list.length===0&&<div className="empty">Không có thành viên</div>}
+        {list.map((x,i)=>(
+          <button className="pr" key={x.name} onClick={()=>openMember(x.name)}>
+            <Avatar x={x} pos={x.p?i+1:null}/>
+            <div style={{minWidth:0}}>
+              <div className="n1"><span className="t">{x.name}</span>{x.rank!=="?"&&<span className={"rk "+x.rank}>{x.rank}</span>}</div>
+              <div className="n2">
+                {x.p?<><span className="mono">{x.w}T-{x.l}B · {sgn(x.diff)}</span><Form f={x.form}/></>:<span>Chưa thi đấu</span>}
+              </div>
+            </div>
+            <div className="big">
+              {sort==="diff"?sgn(x.diff):sort==="w"?x.w:sort==="form"?x.formW+"/"+x.form.length:pctTxt(x.pct)}
+              <small>{sort==="diff"?"hiệu số":sort==="w"?"trận thắng":sort==="form"?"5 trận gần":"tỉ lệ thắng"}</small>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  </>);
+}
+
+function Ring({v}){
+  const r=34,c=2*Math.PI*r,p=v==null?0:v;
+  return(
+    <svg className="ring" viewBox="0 0 84 84" role="img" aria-label={"Tỉ lệ thắng "+pctTxt(v)}>
+      <circle cx="42" cy="42" r={r} fill="none" stroke="#f1e6d1" strokeWidth="8"/>
+      <circle cx="42" cy="42" r={r} fill="none" stroke="url(#rg)" strokeWidth="8" strokeLinecap="round"
+        strokeDasharray={`${c*p} ${c}`} transform="rotate(-90 42 42)"/>
+      <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f0d999"/><stop offset="1" stopColor="#a87a24"/></linearGradient></defs>
+      <text x="42" y="47" textAnchor="middle" fill="#3b2a14" fontSize="18" fontWeight="800">{pctTxt(v)}</text>
+    </svg>
+  );
+}
+
+// Biểu đồ phân kỳ: mỗi cột là 1 trận, cao = cách biệt điểm (lên = thắng, xuống = thua)
+function MarginChart({x,data}){
+  const g=x.games;
+  const [sel,setSel]=useState(g.length-1);
+  useEffect(()=>setSel(g.length-1),[g.length]);
+  const W=320,H=150,L=28,R=6,T=10,B=20;
+  const n=g.length,iw=W-L-R,step=iw/Math.max(n,1);
+  const bw=Math.max(3,Math.min(16,step*0.62));
+  const max=Math.max(4,...g.map(y=>Math.abs(y.my-y.th)));
+  const half=(H-T-B)/2,mid=T+half;
+  const bar=(x0,v)=>{
+    const h=Math.max(2,Math.abs(v)/max*half),r=Math.min(4,bw/2,h);
+    const y=v>=0?mid-h:mid+h,s=v>=0?1:-1;
+    return`M${x0},${mid}V${y+s*r}Q${x0},${y} ${x0+r},${y}H${x0+bw-r}Q${x0+bw},${y} ${x0+bw},${y+s*r}V${mid}Z`;
+  };
+  let lastLx=-99;
+  const cur=g[Math.min(sel,n-1)];
+  return(<>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Cách biệt điểm từng trận">
+      <line x1={L} x2={W-R} y1={T} y2={T} stroke="#efe4d0"/>
+      <line x1={L} x2={W-R} y1={T+2*half} y2={T+2*half} stroke="#efe4d0"/>
+      <text x={L-6} y={T+4} textAnchor="end" fontSize="9" fill="#9a8468">+{max}</text>
+      <text x={L-6} y={mid+3} textAnchor="end" fontSize="9" fill="#9a8468">0</text>
+      <text x={L-6} y={T+2*half+3} textAnchor="end" fontSize="9" fill="#9a8468">−{max}</text>
+      {g.map((y,i)=>{
+        const cx=L+i*step,x0=cx+(step-bw)/2,v=y.my-y.th;
+        let lab=null;
+        if((i===0||g[i-1].ri!==y.ri)&&cx-lastLx>=20){lastLx=cx;lab=<text x={cx+step/2} y={H-6} textAnchor="middle" fontSize="8.5" fill="#9a8468">V{y.ri+1}</text>;}
+        return(
+          <g key={i} onClick={()=>setSel(i)} onMouseEnter={()=>setSel(i)} style={{cursor:"pointer"}}>
+            {i===sel&&<rect x={cx} y={T} width={step} height={2*half} rx="4" fill="rgba(201,161,74,.14)"/>}
+            <path d={bar(x0,v)} fill={y.won?"var(--win)":"var(--loss)"} opacity={i===sel?1:.85}/>
+            <rect x={cx} y={T} width={step} height={2*half} fill="transparent"/>
+            {lab}
+          </g>
+        );
+      })}
+      <line x1={L} x2={W-R} y1={mid} y2={mid} stroke="#cdbb9a"/>
+    </svg>
+    <div className="legend" style={{marginTop:4}}>
+      <span><span className="sw" style={{background:"var(--win)"}}/>Thắng</span>
+      <span><span className="sw" style={{background:"var(--loss)"}}/>Thua</span>
+      <span>Chiều cao = cách biệt điểm</span>
+    </div>
+    {cur&&<div className="tip">
+      <span className="mono muted">V{cur.ri+1} · #{cur.mi+1} · {cleanLabel(cur.label)}</span><br/>
+      <b style={{color:cur.won?"var(--gold2)":"var(--ink2)"}}>{cur.won?"Thắng":"Thua"} {cur.my}–{cur.th}</b>
+      {cur.partners.length>0&&<> · cùng {cur.partners.join(", ")}</>} · gặp {cur.opps.join(" & ")||"—"}
+    </div>}
+  </>);
+}
+
+function RelTable({title,map,empty}){
+  const rows=Object.entries(map).sort((a,b)=>b[1].p-a[1].p||b[1].w/b[1].p-a[1].w/a[1].p);
+  return(
+    <div className="card">
+      <div className="ch"><h2>{title}</h2></div>
+      {rows.length===0?<div className="empty">{empty}</div>:
+      <table className="tbl">
+        <thead><tr><th>Tên</th><th>Trận</th><th>Thắng</th><th>Tỉ lệ</th></tr></thead>
+        <tbody>{rows.map(([n,q])=>{
+          const p=q.w/q.p;
+          return <tr key={n}><td>{n}</td><td className="mono">{q.p}</td><td className="mono">{q.w}</td>
+            <td className="mono" style={{color:p>=0.6?"var(--good)":p<=0.34?"var(--warn)":"var(--ink2)"}}>{pctTxt(p)}</td></tr>;
+        })}</tbody>
+      </table>}
+    </div>
+  );
+}
+
+function MemberSheet({name,an,data,onClose}){
+  const x=an.pl[name];
+  useEffect(()=>{
+    document.body.style.overflow="hidden";
+    return()=>{document.body.style.overflow="";};
+  },[]);
+  if(!x)return null;
+  const avg=an.rankAvg[x.rank];
+  const ins=insights(x,an);
+  const avgAll=(()=>{const xs=Object.values(an.pl);const p=xs.reduce((s,y)=>s+y.p,0),w=xs.reduce((s,y)=>s+y.w,0);return p?w/p:null;})();
+  const best=Object.values(an.pl).filter(y=>y.rank===x.rank&&y.p>=3).sort((a,b)=>b.pct-a.pct)[0];
+  return(
+    <div className="sheet" role="dialog" aria-label={"Phân tích "+x.name}>
+      <div className="sheet-in">
+        <div className="shead">
+          <Avatar x={x}/>
+          <div style={{flex:1,minWidth:0}}>
+            <h2>{x.name}</h2>
+            <div className="sub"><span className="tdot" style={{background:TEAM_COLOR[x.team]}}/>{data.teams[x.team]?data.teams[x.team].name:""}{x.rank!=="?"&&<> · <span className={"rk "+x.rank}>{x.rank}</span> Hạng {x.rank}</>}</div>
+          </div>
+          <button className="iconbtn" aria-label="Đóng" onClick={onClose}><IcX/></button>
+        </div>
+
+        <div className="card">
+          <div className="kgrid">
+            <div className="kg hero2">
+              <Ring v={x.pct}/>
+              <div>
+                <div className="eyebrow">Tỉ lệ thắng</div>
+                <div className="mono" style={{fontSize:22,fontWeight:800,marginTop:2}}>{x.w}T – {x.l}B</div>
+                <div style={{marginTop:6}}>{x.form.length?<Form f={x.form}/>:<span className="muted" style={{fontSize:12}}>Chưa thi đấu</span>}</div>
+              </div>
+            </div>
+            <div className="kg"><b>{sgn(x.diff)}</b><span>Hiệu số</span></div>
+            <div className="kg"><b>{x.pts}</b><span>Điểm góp đội</span></div>
+            <div className="kg"><b>{x.p}</b><span>Trận đã đấu</span></div>
+            <div className="kg"><b>{x.p?x.avgF.toFixed(1):"–"}</b><span>Ghi TB/trận</span></div>
+            <div className="kg"><b>{x.p?x.avgA.toFixed(1):"–"}</b><span>Mất TB/trận</span></div>
+            <div className="kg"><b>{x.closeW}-{x.closeL}</b><span>Sát nút T-B</span></div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="ch"><h2>Gợi ý & nhận định</h2><span className="hint">Tự động</span></div>
+          <div className="ins">
+            {ins.map((it,i)=>(
+              <div className={"in "+it.tone} key={i}><div className="ic">{it.ic}</div><div dangerouslySetInnerHTML={{__html:it.html}}/></div>
+            ))}
+          </div>
+        </div>
+
+        {x.p>0&&<div className="card">
+          <div className="ch"><h2>Diễn biến từng trận</h2><span className="hint">Chạm cột để xem</span></div>
+          <MarginChart x={x} data={data}/>
+        </div>}
+
+        {x.p>0&&<div className="card">
+          <div className="ch"><h2>So sánh tỉ lệ thắng</h2></div>
+          <div className="cmp">
+            {[[x.name,x.pct,"var(--grad)"],[`TB Hạng ${x.rank}`,avg,"#cdbb9a"],["TB toàn giải",avgAll,"#e3d4b8"],
+              ...(best&&best.name!==x.name?[[`Top Hạng ${x.rank}`,best.pct,"#cdbb9a"]]:[])].map(([l,v,c])=>(
+              <div className="ln" key={l}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l}</span>
+                <div className="tr"><i style={{width:(v||0)*100+"%",background:c}}/></div><span className="v">{pctTxt(v)}</span></div>
+            ))}
+          </div>
+        </div>}
+
+        <RelTable title="Theo đồng đội" map={x.partners} empty="Chưa có dữ liệu đánh cặp"/>
+        <RelTable title="Theo đối thủ" map={x.opps} empty="Chưa có dữ liệu đối thủ"/>
+      </div>
+    </div>
+  );
 }
 
 // ─── TEAMS ───────────────────────────────────────────────────────────────────
@@ -688,17 +1128,16 @@ function TeamCard({t,data,save}){
     if(!n||n===old)return;
     if(n.toLowerCase()!==old.toLowerCase()&&exists(n)){alert(`"${n}" đã có trong danh sách`);return;}
     save(["teams",t,"members",i,"name"],n);
-    // cập nhật tên trong các trận đã nhập
     const key=t==="1"?"a":"b";
     if(data.rounds.some(r=>r.matches.some(m=>m[key].includes(old))))
       save(["rounds"],data.rounds.map(r=>({matches:r.matches.map(m=>({...m,[key]:m[key].map(x=>x===old?n:x)}))})));
   };
 
-  const Group=({r})=>{
+  const group=r=>{
     const list=team.members.map((m,i)=>({...m,i})).filter(m=>m.rank===r);
     return(
-      <div className="group">
-        <div className="gt"><span className={"rk "+r}>{r}</span>Hạng {r} · {list.length}</div>
+      <div className="group" key={r}>
+        <div className="lbl" style={{display:"flex",alignItems:"center",gap:6}}><span className={"rk "+r}>{r}</span>Hạng {r} · {list.length}</div>
         {list.length===0&&<div className="muted" style={{fontSize:12,padding:"4px 0"}}>Chưa có</div>}
         {list.map(m=>(
           <div className="mem" key={m.name}>
@@ -706,8 +1145,8 @@ function TeamCard({t,data,save}){
             <div className="seg">
               {["A","B"].map(x=><button key={x} className={m.rank===x?"on":""} onClick={()=>m.rank!==x&&save(["teams",t,"members",m.i,"rank"],x)}>{x}</button>)}
             </div>
-            <button className="iconbtn" title="Đổi tên" onClick={()=>rename(m.i)}><IcPen/></button>
-            <button className="iconbtn" title="Xoá" onClick={()=>remove(m.i)}><IcTrash/></button>
+            <button className="iconbtn" aria-label="Đổi tên" onClick={()=>rename(m.i)}><IcPen/></button>
+            <button className="iconbtn" aria-label="Xoá" onClick={()=>remove(m.i)}><IcTrash/></button>
           </div>
         ))}
       </div>
@@ -715,17 +1154,17 @@ function TeamCard({t,data,save}){
   };
 
   return(
-    <div className="card" style={{borderTop:`4px solid ${TEAM_COLOR[t]}`}}>
+    <div className="card" style={{borderTop:`3px solid ${TEAM_HEX[t]}`}}>
       <div className="thead">
-        <span className="tdot" style={{background:TEAM_COLOR[t],width:14,height:14}}/>
+        <span className="tdot" style={{background:TEAM_COLOR[t],width:12,height:12}}/>
         <input className="field" value={name} onChange={e=>setName(e.target.value)}
-          onBlur={()=>{const v=name.trim()||("Đội "+t);setName(v);if(v!==team.name)save(["teams",t,"name"],v);}}/>
+          onBlur={()=>{const v=name.trim()||("Team "+t);setName(v);if(v!==team.name)save(["teams",t,"name"],v);}}/>
       </div>
-      <Group r="A"/>
-      <Group r="B"/>
+      {group("A")}
+      {group("B")}
       <div className="addrow">
         <input className="field" placeholder="Tên thành viên mới" value={nm} onChange={e=>setNm(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/>
-        <div className="seg" style={{alignSelf:"center"}}>
+        <div className="seg">
           {["A","B"].map(x=><button key={x} className={rk===x?"on":""} onClick={()=>setRk(x)}>{x}</button>)}
         </div>
         <button className="btn" onClick={add}>Thêm</button>
@@ -757,19 +1196,19 @@ function Settings({data,save}){
   const move=(i,d)=>{const j=i+d;if(j<0||j>=tp.length)return;const n=[...tp];[n[i],n[j]]=[n[j],n[i]];setTp(n);};
   const addTp=()=>{const v=nl.trim();if(!v)return;setTp([...tp,v]);setNl("");};
   const delTp=i=>{if(tp.length<=1){alert("Cần ít nhất 1 trận mỗi vòng");return;}setTp(tp.filter((_,j)=>j!==i));};
-  const renameTp=i=>{const v=(prompt("Tên thể thức",tp[i])||"").trim();if(v&&v!==tp[i])setTp(tp.map((x,j)=>j===i?v:x));};
+  const renameTp=i=>{const v=(prompt("Tên trận",tp[i])||"").trim();if(v&&v!==tp[i])setTp(tp.map((x,j)=>j===i?v:x));};
 
   const emptyRounds=data.rounds.filter(r=>!hasData(r)).length;
   const applyTemplate=()=>{
     if(!emptyRounds){alert("Không còn vòng nào trống để áp dụng");return;}
-    if(!confirm(`Áp dụng thể thức mới (${tp.length} trận) cho ${emptyRounds} vòng chưa nhập dữ liệu?`))return;
+    if(!confirm(`Áp dụng thể thức (${tp.length} trận) cho ${emptyRounds} vòng chưa nhập dữ liệu?`))return;
     save(["rounds"],data.rounds.map(r=>hasData(r)?r:{matches:tp.map(blankMatch)}));
   };
 
   const exportJson=()=>{
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-    a.download="pickleball-ab-"+new Date().toISOString().slice(0,10)+".json";a.click();
+    a.download="edutalk-pickleball-"+new Date().toISOString().slice(0,10)+".json";a.click();
   };
   const importJson=e=>{
     const f=e.target.files[0];if(!f)return;
@@ -784,13 +1223,13 @@ function Settings({data,save}){
     rd.readAsText(f);
   };
   const clearResults=()=>{
-    if(!confirm("Xoá toàn bộ tỉ số & người đánh của mọi vòng? (Giữ nguyên thành viên và thể thức)"))return;
-    save(["rounds"],data.rounds.map(r=>({matches:r.matches.map(m=>({...m,a:[],b:[],sa:"",sb:""}))})));
+    if(!confirm("Xoá toàn bộ tỉ số của mọi vòng? (Giữ nguyên thành viên, cặp đánh và thể thức)"))return;
+    save(["rounds"],data.rounds.map(r=>({matches:r.matches.map(m=>({...m,sa:"",sb:""}))})));
   };
 
   return(<>
     <div className="card">
-      <h2>Tính điểm & số vòng</h2>
+      <div className="ch"><h2>Tính điểm & số vòng</h2></div>
       <div className="set">
         <div><div className="t">Điểm mỗi trận thắng</div><div className="d">Cộng cho đội thắng trận</div></div>
         <input className="field num" type="number" inputMode="numeric" value={pts} onChange={e=>setPts(e.target.value)} onBlur={applyPts}/>
@@ -805,36 +1244,34 @@ function Settings({data,save}){
     </div>
 
     <div className="card">
-      <h2>Thể thức mỗi vòng <span className="hint">{tp.length} trận, đấu lần lượt</span></h2>
+      <div className="ch"><h2>Thể thức mỗi vòng</h2><span className="hint">{tp.length} trận, đấu lần lượt</span></div>
       {tp.map((x,i)=>(
         <div className="tpl" key={i+x}>
           <span className="i">{i+1}</span>
           <span className="n">{x}</span>
-          <button className="iconbtn" onClick={()=>move(i,-1)} disabled={i===0}><IcUp/></button>
-          <button className="iconbtn" onClick={()=>move(i,1)} disabled={i===tp.length-1}><IcDown/></button>
-          <button className="iconbtn" onClick={()=>renameTp(i)}><IcPen/></button>
-          <button className="iconbtn" onClick={()=>delTp(i)}><IcTrash/></button>
+          <button className="iconbtn" aria-label="Lên" onClick={()=>move(i,-1)} disabled={i===0}><IcUp/></button>
+          <button className="iconbtn" aria-label="Xuống" onClick={()=>move(i,1)} disabled={i===tp.length-1}><IcDown/></button>
+          <button className="iconbtn" aria-label="Sửa" onClick={()=>renameTp(i)}><IcPen/></button>
+          <button className="iconbtn" aria-label="Xoá" onClick={()=>delTp(i)}><IcTrash/></button>
         </div>
       ))}
       <div className="row" style={{marginTop:10}}>
-        <input className="field" placeholder="VD: Đôi Hạng A, Đơn Hạng B…" value={nl} onChange={e=>setNl(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTp()}/>
+        <input className="field" placeholder="VD: Đôi Hạng A · 18:30" value={nl} onChange={e=>setNl(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTp()}/>
         <button className="btn" onClick={addTp}>Thêm</button>
       </div>
-      <button className="btn ghost block" style={{marginTop:10}} onClick={applyTemplate}>
-        Áp dụng cho {emptyRounds} vòng chưa nhập
-      </button>
-      <div className="muted" style={{fontSize:11.5,marginTop:8}}>Vòng đã có dữ liệu giữ nguyên. Vòng mới tạo thêm sẽ tự dùng thể thức này. Bạn cũng có thể thêm/xoá trận riêng cho từng vòng ở tab Nhập liệu.</div>
+      <button className="btn ghost block" style={{marginTop:10}} onClick={applyTemplate}>Áp dụng cho {emptyRounds} vòng chưa nhập</button>
+      <div className="hint" style={{marginTop:8}}>Vòng đã có dữ liệu (cặp đánh hoặc tỉ số) giữ nguyên. Thêm giờ vào cuối tên trận (VD “· 18:30”) để hiện giờ thi đấu.</div>
     </div>
 
     <div className="card">
-      <h2>Dữ liệu</h2>
+      <div className="ch"><h2>Dữ liệu</h2></div>
       <div className="row" style={{flexWrap:"wrap"}}>
         <button className="btn ghost sm" onClick={exportJson}>Xuất file sao lưu</button>
         <button className="btn ghost sm" onClick={()=>fileRef.current.click()}>Nhập từ file</button>
-        <button className="btn danger sm" onClick={clearResults}>Xoá toàn bộ kết quả</button>
+        <button className="btn danger sm" onClick={clearResults}>Xoá toàn bộ tỉ số</button>
         <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={importJson}/>
       </div>
-      <div className="muted" style={{fontSize:11.5,marginTop:10}}>Giải cũ (3 đội) vẫn ở: <a href="../">tuanle-coder.github.io/pickleball-league</a></div>
+      <div className="hint" style={{marginTop:10}}>Giải cũ (3 đội) vẫn ở: <a href="../">tuanle-coder.github.io/pickleball-league</a></div>
     </div>
   </>);
 }
@@ -843,21 +1280,35 @@ function Settings({data,save}){
 function App(){
   const {data,status,loaded,save}=useLeague();
   const [tab,setTab]=useState("home");
+  const [member,setMember]=useState(null);
   const st=useMemo(()=>computeStats(data),[data]);
+  const an=useMemo(()=>analyze(data),[data]);
   const go=t=>{setTab(t);window.scrollTo({top:0});};
-  const TABS=[["home","Tổng quan",IcChart],["entry","Nhập liệu",IcEdit],["teams","Đội",IcUsers],["settings","Cài đặt",IcSliders]];
+
+  // nút Back của điện thoại đóng trang chi tiết thành viên
+  const openMember=n=>{history.pushState({sheet:n},"");setMember(n);};
+  const closeMember=()=>history.back();
+  useEffect(()=>{
+    const onPop=()=>setMember(null);
+    window.addEventListener("popstate",onPop);
+    return()=>window.removeEventListener("popstate",onPop);
+  },[]);
+
+  const TABS=[["home","Tổng quan",IcHome],["entry","Nhập liệu",IcEdit],["stats","Phân tích",IcChart],["teams","Đội",IcUsers],["settings","Cài đặt",IcSliders]];
   return(
     <div className="app">
-      <Hero data={data} st={st} status={status}/>
+      <TopBar data={data} st={st} status={status} tab={tab}/>
       <main>
-        {tab==="home"&&<Overview data={data} st={st} go={go}/>}
+        {tab==="home"&&<Overview data={data} st={st} an={an} go={go} openMember={openMember}/>}
         {tab==="entry"&&<Entry data={data} save={save} loaded={loaded} go={go}/>}
+        {tab==="stats"&&<Analytics data={data} an={an} openMember={openMember}/>}
         {tab==="teams"&&<>{["1","2"].map(t=><TeamCard key={t} t={t} data={data} save={save}/>)}</>}
         {tab==="settings"&&<Settings data={data} save={save}/>}
       </main>
       <nav className="tabbar">
         {TABS.map(([k,l,I])=><button key={k} className={tab===k?"on":""} onClick={()=>go(k)}><I/>{l}</button>)}
       </nav>
+      {member&&<MemberSheet name={member} an={an} data={data} onClose={closeMember}/>}
     </div>
   );
 }
