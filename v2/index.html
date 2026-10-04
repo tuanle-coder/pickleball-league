@@ -269,6 +269,19 @@ button.hlc{font:inherit;color:inherit}
 .score .colon{font-family:var(--disp);font-size:24px;font-weight:900;color:var(--gold)}
 .warnline2{font-size:12px;font-weight:700;color:var(--warn);text-align:center;padding:0 12px 10px;background:var(--goldll)}
 
+/* lịch thi đấu */
+.rchip{height:68px}
+.rchip em{font-style:normal;font-family:"Nunito",sans-serif;font-size:9.5px;font-weight:700;color:var(--muted);margin-top:1px}
+.rchip.on em{color:#e6cf98}
+.rnum small{display:block;font-family:"Nunito",sans-serif;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0}
+.datebox{display:flex;align-items:center;gap:10px;margin-top:10px;padding:9px 10px;border:1px dashed #e6cf98;border-radius:6px;background:var(--goldll)}
+.datebox .dicon{font-size:18px}
+.datebox .dtxt{flex:1;min-width:0}
+.datebox .dtxt b{display:block;font-family:var(--disp);font-size:14px;font-weight:800;color:var(--brown)}
+.datebox .dtxt small{font-size:11.5px;color:var(--muted);font-weight:600}
+.dpick{position:relative;overflow:hidden}
+.dpick input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;cursor:pointer}
+
 /* ANALYTICS */
 .plist .pr{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font:inherit;color:inherit}
 .plist .pr:first-child{border-top:0}
@@ -373,7 +386,7 @@ const TEAM_LIGHT={"1":"#e8eff8","2":"#fcede3"};
 function blankMatch(label){return{label:label||"",a:[],b:[],sa:"",sb:""};}
 function buildRounds(n,template){return Array.from({length:n},()=>({matches:template.map(blankMatch)}));}
 const DEFAULT_DATA={
-  config:{ptsWin:3,template:DEFAULT_TEMPLATE},
+  config:{ptsWin:3,template:DEFAULT_TEMPLATE,startDate:"2026-10-05"},
   teams:{"1":{name:"Team 1",members:[]},"2":{name:"Team 2",members:[]}},
   rounds:buildRounds(10,DEFAULT_TEMPLATE),
 };
@@ -396,6 +409,7 @@ function normalize(d){
       members:toArr(x.members).filter(m=>m&&m.name).map(m=>({name:String(m.name),rank:m.rank==="B"?"B":"A"}))};
   });
   const rounds=toArr(d.rounds).map(r=>({
+    date:r&&r.date?String(r.date):"",
     matches:toArr(r&&r.matches).filter(Boolean).map(m=>({
       label:m.label||"",
       a:toArr(m.a).filter(Boolean),
@@ -405,7 +419,7 @@ function normalize(d){
     })),
   }));
   return{
-    config:{ptsWin:Number(cfg.ptsWin)||3,template:template.length?template:DEFAULT_TEMPLATE},
+    config:{ptsWin:Number(cfg.ptsWin)||3,template:template.length?template:DEFAULT_TEMPLATE,startDate:cfg.startDate||DEFAULT_START},
     teams,rounds,
   };
 }
@@ -443,6 +457,31 @@ function roundWinner(r,s){
   const d=roundDiff(r);
   return d>0?"1":d<0?"2":"0";
 }
+
+// ─── LỊCH THI ĐẤU ────────────────────────────────────────────────────────────
+const DEFAULT_START="2026-10-05";
+const WD=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
+function parseD(s){const[y,m,d]=(s||"").split("-").map(Number);return y&&m&&d?new Date(y,m-1,d):null;}
+function isoD(dt){return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");}
+function nextMonday(dt){const d=new Date(dt);d.setDate(d.getDate()+((8-d.getDay())%7||7));return d;}
+// Vòng 1 = ngày bắt đầu giải; vòng có ngày sửa tay giữ nguyên; các vòng còn lại = thứ 2 kế tiếp sau vòng trước
+function roundDates(data){
+  const out=[];let prev=null;
+  data.rounds.forEach((r,i)=>{
+    const iso=i===0?(r.date||data.config.startDate):(r.date||(prev&&parseD(prev)?isoD(nextMonday(parseD(prev))):""));
+    out.push({iso,manual:i>0&&!!r.date});prev=iso;
+  });
+  return out;
+}
+function fmtLong(iso){const d=parseD(iso);if(!d)return"";return WD[d.getDay()]+", "+String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear();}
+function fmtShort(iso){const d=parseD(iso);return d?String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0"):"";}
+// Sửa ngày vòng 1 = đổi ngày bắt đầu giải; vòng khác lưu ngày sửa tay
+function setRoundDate(data,save,i,v){
+  if(!v)return;
+  if(i===0){save(["config","startDate"],v);if(data.rounds[0].date)save(["rounds",0,"date"],null);}
+  else save(["rounds",i,"date"],v);
+}
+const openPicker=e=>{try{e.currentTarget.showPicker();}catch(_){}};
 
 function computeStats(data){
   const P=data.config.ptsWin;
@@ -669,6 +708,7 @@ function Overview({data,st,an,go,openMember}){
   const hot=ps.filter(x=>x.streak&&x.streak.won).sort((a,b)=>b.streak.n-a.streak.n||b.w-a.w)[0];
   const big=an.big;
 
+  const dates=roundDates(data);
   const rounds=data.rounds.map((r,i)=>({i,s:st.perRound[i],done:isDone(r),any:hasScore(r),r})).filter(x=>x.any);
   const labels=Object.keys(st.byLabel);
 
@@ -701,7 +741,7 @@ function Overview({data,st,an,go,openMember}){
     </div>}
 
     {nx&&!noMembers&&<div className="card next">
-      <div className="ch"><span className="eyebrow">▶ Trận tiếp theo</span><span className="mono muted" style={{fontSize:11}}>V{nx.ri+1} · #{nx.mi+1}{timeOf(nx.m.label)?" · "+timeOf(nx.m.label):""}</span></div>
+      <div className="ch"><span className="eyebrow">▶ Trận tiếp theo</span><span className="mono muted" style={{fontSize:11}}>{fmtShort(dates[nx.ri].iso)?fmtShort(dates[nx.ri].iso)+" · ":""}V{nx.ri+1} · #{nx.mi+1}{timeOf(nx.m.label)?" · "+timeOf(nx.m.label):""}</span></div>
       <div style={{fontWeight:800,fontSize:15,marginBottom:8}}>{cleanLabel(nx.m.label)}</div>
       <div className="vsrow">
         <div className="pr" style={{color:"var(--t1)"}}>{nx.m.a.length?nx.m.a.join(" & "):"Chưa chọn"}</div>
@@ -731,7 +771,7 @@ function Overview({data,st,an,go,openMember}){
         const tie=done&&s["1"]===s["2"];
         return(
           <div className="rrow" key={i}>
-            <div className="rnum">VÒNG {i+1}</div>
+            <div className="rnum">VÒNG {i+1}<small>{fmtShort(dates[i].iso)}</small></div>
             <div className={"rv"+(w&&w!=="1"?" dim":"")}>{s["1"]}</div>
             <div className="split">
               {tot>0&&<i style={{width:(s["1"]/tot*100)+"%",background:"var(--t1)"}}/>}
@@ -868,6 +908,8 @@ function Entry({data,save,loaded,go}){
   const noMembers=!data.teams["1"].members.length||!data.teams["2"].members.length;
   const status=isDone(r)?["b-ok","HOÀN THÀNH"]:hasScore(r)?["b-live","ĐANG ĐẤU"]:["b-idle","CHƯA ĐẤU"];
   const diff=roundDiff(r);
+  const dates=roundDates(data);
+  const dd=dates[idx];
 
   const addMatch=()=>{
     const tp=data.config.template;
@@ -884,7 +926,7 @@ function Entry({data,save,loaded,go}){
       <div className="rstrip" ref={stripRef}>
         {data.rounds.map((x,i)=>{
           const cls=i===idx?" on":isDone(x)?" done":hasScore(x)?" part":"";
-          return <button key={i} className={"rchip"+cls} onClick={()=>setRi(i)}><small>VÒNG</small>{i+1}</button>;
+          return <button key={i} className={"rchip"+cls} onClick={()=>setRi(i)}><small>VÒNG</small>{i+1}<em>{fmtShort(dates[i].iso)}</em></button>;
         })}
       </div>
     </div>
@@ -895,6 +937,17 @@ function Entry({data,save,loaded,go}){
         <h3>Vòng {idx+1}</h3>
         <span className={"badge "+status[0]}>{status[1]}</span>
         <button className="iconbtn" aria-label="Vòng sau" disabled={idx===data.rounds.length-1} onClick={()=>setRi(idx+1)}><IcRight/></button>
+      </div>
+      <div className="datebox">
+        <span className="dicon">📅</span>
+        <div className="dtxt">
+          <b>{fmtLong(dd.iso)||"Chưa đặt ngày"}</b>
+          <small>{idx===0?"Ngày bắt đầu giải":dd.manual?"Đã chỉnh tay":"Tự động: thứ 2 kế tiếp"}</small>
+        </div>
+        <label className="btn ghost sm dpick">Đổi ngày
+          <input type="date" value={dd.iso} onClick={openPicker} onChange={e=>setRoundDate(data,save,idx,e.target.value)}/>
+        </label>
+        {dd.manual&&<button className="btn ghost sm" title="Trả về lịch tự động" onClick={()=>save(["rounds",idx,"date"],null)}>↺</button>}
       </div>
       <div className="duel">
         <div className="s"><div>{data.teams["1"].name}</div><b style={{color:"var(--t1)"}}>{s["1"]}</b></div>
@@ -1149,7 +1202,7 @@ function TeamCard({t,data,save}){
     save(["teams",t,"members",i,"name"],n);
     const key=t==="1"?"a":"b";
     if(data.rounds.some(r=>r.matches.some(m=>m[key].includes(old))))
-      save(["rounds"],data.rounds.map(r=>({matches:r.matches.map(m=>({...m,[key]:m[key].map(x=>x===old?n:x)}))})));
+      save(["rounds"],data.rounds.map(r=>({...r,matches:r.matches.map(m=>({...m,[key]:m[key].map(x=>x===old?n:x)}))})));
   };
 
   const group=r=>{
@@ -1218,10 +1271,16 @@ function Settings({data,save}){
   const renameTp=i=>{const v=(prompt("Tên trận",tp[i])||"").trim();if(v&&v!==tp[i])setTp(tp.map((x,j)=>j===i?v:x));};
 
   const emptyRounds=data.rounds.filter(r=>!hasData(r)).length;
+  const dates=roundDates(data);
+  const manualN=dates.filter(d=>d.manual).length;
+  const resetDates=()=>{
+    if(!confirm("Bỏ toàn bộ ngày đã chỉnh tay, xếp lại tất cả các vòng vào thứ 2 hàng tuần?"))return;
+    data.rounds.forEach((r,i)=>{if(r.date)save(["rounds",i,"date"],null);});
+  };
   const applyTemplate=()=>{
     if(!emptyRounds){alert("Không còn vòng nào trống để áp dụng");return;}
     if(!confirm(`Áp dụng thể thức (${tp.length} trận) cho ${emptyRounds} vòng chưa nhập dữ liệu?`))return;
-    save(["rounds"],data.rounds.map(r=>hasData(r)?r:{matches:tp.map(blankMatch)}));
+    save(["rounds"],data.rounds.map(r=>hasData(r)?r:{...r,matches:tp.map(blankMatch)}));
   };
 
   const exportJson=()=>{
@@ -1243,7 +1302,7 @@ function Settings({data,save}){
   };
   const clearResults=()=>{
     if(!confirm("Xoá toàn bộ tỉ số của mọi vòng? (Giữ nguyên thành viên, cặp đánh và thể thức)"))return;
-    save(["rounds"],data.rounds.map(r=>({matches:r.matches.map(m=>({...m,sa:"",sb:""}))})));
+    save(["rounds"],data.rounds.map(r=>({...r,matches:r.matches.map(m=>({...m,sa:"",sb:""}))})));
   };
 
   return(<>
@@ -1260,6 +1319,24 @@ function Settings({data,save}){
           <button className="btn sm" onClick={applyRounds}>Lưu</button>
         </div>
       </div>
+    </div>
+
+    <div className="card">
+      <div className="ch"><h2>Lịch thi đấu</h2><span className="hint">Thứ 2 hàng tuần</span></div>
+      {dates.map((d,i)=>(
+        <div className="set" key={i}>
+          <div><div className="t">Vòng {i+1}</div>
+            <div className="d">{fmtLong(d.iso)||"Chưa đặt ngày"}{i===0?" · bắt đầu giải":d.manual?" · chỉnh tay":""}</div></div>
+          <div className="row">
+            {d.manual&&<button className="btn ghost sm" title="Trả về lịch tự động" onClick={()=>save(["rounds",i,"date"],null)}>↺</button>}
+            <label className="btn ghost sm dpick">Đổi
+              <input type="date" value={d.iso} onClick={openPicker} onChange={e=>setRoundDate(data,save,i,e.target.value)}/>
+            </label>
+          </div>
+        </div>
+      ))}
+      {manualN>0&&<button className="btn ghost block" style={{marginTop:10}} onClick={resetDates}>Bỏ {manualN} ngày chỉnh tay, xếp lại thứ 2 hàng tuần</button>}
+      <div className="hint" style={{marginTop:8}}>Sửa ngày một vòng thì các vòng sau (chưa chỉnh tay) tự dời sang thứ 2 kế tiếp.</div>
     </div>
 
     <div className="card">
