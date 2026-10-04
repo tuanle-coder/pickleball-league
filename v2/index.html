@@ -279,6 +279,13 @@ function winner(m){
 function isDone(r){return r.matches.length>0&&r.matches.every(m=>winner(m)!==null);}
 function hasScore(r){return r.matches.some(m=>m.sa!==""||m.sb!=="");}
 function hasData(r){return r.matches.some(m=>m.sa!==""||m.sb!==""||m.a.length||m.b.length);}
+// Hiệu số điểm của vòng (tổng điểm bóng Team 1 − Team 2), dùng để phân định khi hoà điểm vòng
+function roundDiff(r){return r.matches.reduce((d,m)=>winner(m)?d+Number(m.sa)-Number(m.sb):d,0);}
+function roundWinner(r,s){
+  if(s["1"]!==s["2"])return s["1"]>s["2"]?"1":"2";
+  const d=roundDiff(r);
+  return d>0?"1":d<0?"2":"0";
+}
 
 function computeStats(data){
   const P=data.config.ptsWin;
@@ -303,7 +310,8 @@ function computeStats(data){
   data.rounds.forEach((r,i)=>{
     if(!isDone(r))return;roundsDone++;
     const s=perRound[i];
-    if(s["1"]>s["2"])roundWins["1"]++;else if(s["2"]>s["1"])roundWins["2"]++;else roundWins.draw++;
+    const w=roundWinner(r,s);
+    if(w==="0")roundWins.draw++;else roundWins[w]++;
   });
   return{P,total,wins,perRound,byLabel,mem,played,roundsDone,roundWins};
 }
@@ -437,7 +445,7 @@ function Overview({data,st,go}){
       {rounds.length===0&&<div className="empty">Chưa có vòng nào có kết quả</div>}
       {rounds.map(({i,s,done})=>{
         const tot=s["1"]+s["2"];
-        const w=done?(s["1"]>s["2"]?"1":s["2"]>s["1"]?"2":"0"):null;
+        const w=done?roundWinner(data.rounds[i],s):null;
         return(
           <div className="rrow" key={i}>
             <div className="rnum">Vòng {i+1}</div>
@@ -642,7 +650,10 @@ function Entry({data,save,loaded,go}){
         <div className="s"><div style={{color:"var(--t2)"}}>{data.teams["2"].name}</div><b style={{color:"var(--t2)"}}>{s["2"]}</b></div>
       </div>
       <div className="prog"><i style={{width:(r.matches.length?doneN/r.matches.length*100:0)+"%"}}/></div>
-      <div className="muted" style={{fontSize:11.5,marginTop:6,textAlign:"center"}}>{doneN}/{r.matches.length} trận đã có kết quả</div>
+      <div className="muted" style={{fontSize:11.5,marginTop:6,textAlign:"center"}}>
+        {doneN}/{r.matches.length} trận đã có kết quả · Hiệu số điểm: {roundDiff(r)>0?"+":""}{roundDiff(r)} cho {data.teams["1"].name}
+        {s["1"]===s["2"]&&doneN>0&&<div style={{color:"var(--warn)",fontWeight:700,marginTop:3}}>Đang hoà điểm vòng → phân định bằng hiệu số</div>}
+      </div>
     </div>
 
     {r.matches.map((m,mi)=>(
