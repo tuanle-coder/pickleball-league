@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4c1d95">
+<title>Pickleball A·B League</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  const app = initializeApp({
+    apiKey: "AIzaSyB8nOFyKNikVABnqYZ97kStOsQepVhzXB8",
+    authDomain: "pickleball-league-18624.firebaseapp.com",
+    databaseURL: "https://pickleball-league-18624-default-rtdb.firebaseio.com",
+    projectId: "pickleball-league-18624",
+    storageBucket: "pickleball-league-18624.firebasestorage.app",
+    messagingSenderId: "136286431509",
+    appId: "1:136286431509:web:f33687b2d50b65a373a11c"
+  });
+  window.__fb = { db: getDatabase(app), ref, onValue, set };
+  window.dispatchEvent(new Event("fb-ready"));
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+<style>
+:root{
+  --bg:#f6f4fe;--card:#fff;--ink:#1f1640;--muted:#6e6a86;--line:#ece8f8;
+  --p:#7c3aed;--p2:#6d28d9;--p3:#4c1d95;--pl:#f1ecff;--pll:#faf8ff;
+  --t1:#0284c7;--t1l:#e0f2fe;--t2:#e11d48;--t2l:#ffe4e6;
+  --ok:#16a34a;--warn:#d97706;
+  --sh:0 1px 2px rgba(31,22,64,.04),0 8px 24px rgba(76,29,149,.07);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Be Vietnam Pro",system-ui,-apple-system,sans-serif}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+.muted{color:var(--muted)}
+.app{max-width:680px;margin:0 auto;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+
+/* HERO */
+.hero{background:radial-gradient(130% 140% at 0% 0%,#8b5cf6 0%,#6d28d9 42%,#3b0764 100%);color:#fff;
+  padding:calc(18px + env(safe-area-inset-top)) 16px 20px;border-radius:0 0 28px 28px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-90px;top:-110px;
+  background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%)}
+.hero-top{display:flex;justify-content:space-between;align-items:center;position:relative}
+.brand small{letter-spacing:.2em;font-size:10px;opacity:.75;font-weight:600;text-transform:uppercase}
+.brand h1{margin:2px 0 0;font-size:20px;font-weight:800;letter-spacing:-.01em}
+.pill{font-size:11px;font-weight:600;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.18);display:flex;gap:6px;align-items:center;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.board{margin-top:16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;position:relative;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:22px;padding:14px 10px}
+.side{text-align:center;min-width:0}
+.side .nm{font-size:12.5px;font-weight:700;display:flex;justify-content:center;gap:6px;align-items:center;opacity:.92}
+.side .nm span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side .pts{font-size:44px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.side .sub{font-size:11px;opacity:.7}
+.side .lead{display:inline-block;margin-top:5px;font-size:10px;font-weight:700;background:#fde68a;color:#78350f;border-radius:999px;padding:2px 8px}
+.vs{font-size:11px;font-weight:800;opacity:.55;letter-spacing:.1em}
+.meta{display:flex;gap:8px;margin-top:10px;position:relative}
+.meta div{flex:1;background:rgba(255,255,255,.1);border-radius:14px;padding:8px 10px}
+.meta b{display:block;font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.meta span{font-size:10.5px;opacity:.75}
+
+main{padding:16px}
+.card{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:16px;margin-bottom:14px;border:1px solid var(--line)}
+.card h2{font-size:14px;font-weight:800;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card h2 .hint{font-weight:500;color:var(--muted);font-size:11.5px}
+.empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 10px}
+.steps{display:grid;gap:8px;margin-top:10px;text-align:left}
+.steps div{background:var(--pll);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--ink)}
+.steps b{color:var(--p2)}
+
+/* TAB BAR */
+.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:calc(100% - 24px);max-width:520px;
+  background:rgba(30,16,64,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:22px;display:flex;padding:6px;
+  box-shadow:0 10px 30px rgba(46,16,101,.35);z-index:20}
+.tabbar button{flex:1;background:none;border:0;color:#c4b5fd;padding:8px 4px;border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;transition:background .15s}
+.tabbar button.on{background:var(--p);color:#fff}
+.tabbar svg{width:20px;height:20px}
+
+/* BUTTONS / INPUTS */
+.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:700;font-size:13px;background:var(--p);color:#fff;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--pl);color:var(--p2)}
+.btn.danger{background:#fff1f2;color:#e11d48}
+.btn.sm{padding:7px 11px;font-size:12px;border-radius:10px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.4}
+.iconbtn{border:0;background:transparent;color:var(--muted);width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto}
+.iconbtn:hover{background:var(--pl);color:var(--p2)}
+.iconbtn svg{width:16px;height:16px}
+.field{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:16px;background:#fff;color:var(--ink)}
+.field:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px rgba(124,58,237,.12)}
+.seg{display:inline-flex;background:var(--pl);border-radius:11px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:5px 11px;border-radius:8px;font-weight:700;font-size:12px;color:var(--p2)}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(31,22,64,.12)}
+.row{display:flex;gap:8px;align-items:center}
+.lbl{font-size:12px;font-weight:700;color:var(--muted);margin:0 0 6px}
+.tag{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.tag.ok{background:#dcfce7;color:#15803d}.tag.live{background:#fef3c7;color:#b45309}.tag.idle{background:var(--pl);color:var(--p2)}
+.tdot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
+
+/* OVERVIEW */
+.rrow{display:grid;grid-template-columns:40px 26px 1fr 26px 22px;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
+.rrow:first-child{border-top:0}
+.rnum{font-weight:700;font-size:12px;color:var(--muted)}
+.rv{font-weight:800;font-size:15px;text-align:center;font-variant-numeric:tabular-nums}
+.rv.dim{opacity:.35}
+.split{height:10px;border-radius:999px;background:var(--pl);display:flex;overflow:hidden;gap:2px}
+.split i{display:block;height:100%}
+.rw{font-size:12px;text-align:center}
+.lrow{padding:9px 0;border-top:1px solid var(--line)}
+.lrow:first-child{border-top:0}
+.lrow .top{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:6px}
+.mrow{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.mrow:first-child{border-top:0}
+.mrow .pos{font-weight:800;font-size:12px;color:var(--muted);text-align:center}
+.mrow .pos.g{color:#b45309}
+.mrow .nm{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;min-width:0}
+.mrow .nm span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.mrow .bar{height:6px;background:var(--pl);border-radius:999px;overflow:hidden;margin-top:6px}
+.mrow .bar i{display:block;height:100%;border-radius:999px}
+.mrow .pct{font-weight:800;font-size:17px;text-align:right;font-variant-numeric:tabular-nums}
+.mrow .pct small{display:block;font-size:10.5px;font-weight:600;color:var(--muted)}
+.rk{width:18px;height:18px;border-radius:6px;font-size:10px;font-weight:800;display:inline-grid;place-items:center;background:#ede9fe;color:#6d28d9;flex:0 0 auto}
+.rk.B{background:#fef3c7;color:#b45309}
+
+/* ENTRY */
+.rstrip{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none;scroll-behavior:smooth}
+.rstrip::-webkit-scrollbar{display:none}
+.rchip{flex:0 0 auto;min-width:48px;height:54px;border-radius:15px;border:1.5px solid var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-weight:800;font-size:16px;color:var(--ink);position:relative;padding:0 6px}
+.rchip small{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.rchip.done{background:var(--pl);border-color:#ddd6fe;color:var(--p2)}
+.rchip.part::after{content:"";position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.rchip.done::after{content:"";position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--p)}
+.rchip.on{background:var(--p);border-color:var(--p);color:#fff;box-shadow:0 6px 16px rgba(124,58,237,.35)}
+.rchip.on small{color:#e9d5ff}
+.rchip.on::after{display:none}
+.legend{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:5px}
+.rhead{display:flex;align-items:center;gap:10px}
+.rhead h3{margin:0;font-size:20px;font-weight:800;flex:1}
+.mini{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-top:12px;background:var(--pll);border:1px solid var(--line);border-radius:16px;padding:10px}
+.mini .s{text-align:center}
+.mini .s div:first-child{font-size:12px;font-weight:700}
+.mini .s b{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+.mini .c{font-size:11px;color:var(--muted);font-weight:700;text-align:center}
+.prog{height:6px;background:var(--pl);border-radius:999px;overflow:hidden;margin-top:10px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,#a78bfa,#7c3aed);border-radius:999px;transition:width .3s}
+
+.match{background:#fff;border:1.5px solid var(--line);border-radius:20px;margin-bottom:12px;overflow:hidden;box-shadow:var(--sh)}
+.match.next{border-color:#c4b5fd;box-shadow:0 0 0 4px rgba(124,58,237,.09),var(--sh)}
+.mhead{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 12px;background:var(--pll);border-bottom:1px solid var(--line)}
+.mno{font-size:11px;font-weight:800;color:#fff;background:var(--p);border-radius:8px;padding:3px 8px;white-space:nowrap}
+.mlabel{flex:1;border:0;background:transparent;font-weight:700;font-size:16px;color:var(--ink);padding:4px 6px;border-radius:8px;min-width:0}
+.mlabel:focus{outline:2px solid #ddd6fe;background:#fff}
+.mbody{display:grid;grid-template-columns:1fr 1fr}
+.mside{padding:12px;min-width:0}
+.mside+.mside{border-left:1px solid var(--line)}
+.mside.win1{background:linear-gradient(180deg,var(--t1l),#fff 80%)}
+.mside.win2{background:linear-gradient(180deg,var(--t2l),#fff 80%)}
+.mside .tn{font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px}
+.mside .wl{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;color:#fff}
+.picked{font-size:13px;font-weight:700;min-height:19px;margin-bottom:8px;color:var(--ink);word-break:break-word}
+.picked.none{color:#b8b3cc;font-weight:500;font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px 5px 5px;font-size:12px;font-weight:600;color:var(--ink);display:inline-flex;align-items:center;gap:6px;max-width:100%}
+.chip .rk{border-radius:50%}
+.chip.on1{background:var(--t1);border-color:var(--t1);color:#fff}
+.chip.on2{background:var(--t2);border-color:var(--t2);color:#fff}
+.chip.on1 .rk,.chip.on2 .rk{background:rgba(255,255,255,.25);color:#fff}
+.score{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px;border-top:1px solid var(--line);background:#fcfbff}
+.score input{width:76px;height:58px;border-radius:16px;border:2px solid var(--line);text-align:center;font-size:28px;font-weight:800;color:var(--ink);background:#fff;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.score input::-webkit-outer-spin-button,.score input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.score input:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px rgba(124,58,237,.12)}
+.score input.w1{border-color:var(--t1);color:var(--t1)}
+.score input.w2{border-color:var(--t2);color:var(--t2)}
+.score .colon{font-size:22px;font-weight:800;color:#c4b5fd}
+.warnline{font-size:11.5px;color:var(--warn);text-align:center;padding:0 12px 10px;background:#fcfbff}
+.banner{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:14px;padding:12px;font-size:13px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+/* TEAMS / SETTINGS */
+.thead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.thead input{flex:1;font-weight:800;font-size:17px}
+.group{margin-top:10px}
+.group .gt{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.mem{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
+.mem:first-of-type{border-top:0}
+.mem .n{flex:1;font-weight:600;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.addrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-top:12px}
+.tpl{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid var(--line)}
+.tpl:first-child{border-top:0}
+.tpl .i{width:24px;height:24px;border-radius:8px;background:var(--pl);color:var(--p2);font-weight:800;font-size:11px;display:grid;place-items:center}
+.tpl .n{flex:1;font-weight:600;font-size:14px}
+.set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.set:first-of-type{border-top:0}
+.set .t{font-weight:700;font-size:14px}
+.set .d{font-size:11.5px;color:var(--muted)}
+.num{width:76px;text-align:center;font-weight:800}
+a{color:var(--p2)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useMemo,useRef,useCallback}=React;
+
+const ROOT="league_ab";
+const LS_KEY="pb_ab_cache_v1";
+const DEFAULT_TEMPLATE=["Đôi Hạng A","Đôi Hạng B","Hỗn hợp A + B"];
+const TEAM_COLOR={"1":"var(--t1)","2":"var(--t2)"};
+
+// ─── DATA HELPERS ────────────────────────────────────────────────────────────
+function blankMatch(label){return{label:label||"",a:[],b:[],sa:"",sb:""};}
+function buildRounds(n,template){return Array.from({length:n},()=>({matches:template.map(blankMatch)}));}
+const DEFAULT_DATA={
+  config:{ptsWin:3,template:DEFAULT_TEMPLATE},
+  teams:{"1":{name:"Đội 1",members:[]},"2":{name:"Đội 2",members:[]}},
+  rounds:buildRounds(10,DEFAULT_TEMPLATE),
+};
+
+// Firebase lưu mảng thành object {0:..,1:..} và bỏ mảng rỗng → chuẩn hoá lại
+function toArr(v){
+  if(!v)return[];
+  if(Array.isArray(v))return v;
+  if(typeof v==="object")return Object.keys(v).sort((a,b)=>a-b).map(k=>v[k]);
+  return[];
+}
+function normalize(d){
+  d=d||{};
+  const cfg=d.config||{};
+  const template=toArr(cfg.template).filter(Boolean).map(String);
+  const teams={};
+  ["1","2"].forEach(t=>{
+    const x=(d.teams||{})[t]||{};
+    teams[t]={name:x.name||("Đội "+t),
+      members:toArr(x.members).filter(m=>m&&m.name).map(m=>({name:String(m.name),rank:m.rank==="B"?"B":"A"}))};
+  });
+  const rounds=toArr(d.rounds).map(r=>({
+    matches:toArr(r&&r.matches).filter(Boolean).map(m=>({
+      label:m.label||"",
+      a:toArr(m.a).filter(Boolean),
+      b:toArr(m.b).filter(Boolean),
+      sa:m.sa==null?"":String(m.sa),
+      sb:m.sb==null?"":String(m.sb),
+    })),
+  }));
+  return{
+    config:{ptsWin:Number(cfg.ptsWin)||3,template:template.length?template:DEFAULT_TEMPLATE},
+    teams,rounds,
+  };
+}
+function setIn(obj,path,value){
+  if(!path.length)return value;
+  const [k,...rest]=path;
+  const base=Array.isArray(obj)?[...obj]:{...(obj||{})};
+  base[k]=setIn(obj?obj[k]:undefined,rest,value);
+  return base;
+}
+
+// Đội 1 luôn là bên a, Đội 2 luôn là bên b
+function winner(m){
+  if(m.sa===""||m.sb==="")return null;
+  const a=Number(m.sa),b=Number(m.sb);
+  if(isNaN(a)||isNaN(b)||a===b)return null;
+  return a>b?"1":"2";
+}
+function isDone(r){return r.matches.length>0&&r.matches.every(m=>winner(m)!==null);}
+function hasScore(r){return r.matches.some(m=>m.sa!==""||m.sb!=="");}
+function hasData(r){return r.matches.some(m=>m.sa!==""||m.sb!==""||m.a.length||m.b.length);}
+
+function computeStats(data){
+  const P=data.config.ptsWin;
+  const total={"1":0,"2":0},wins={"1":0,"2":0};
+  const byLabel={},mem={};
+  let played=0;
+  const perRound=data.rounds.map(r=>{
+    const s={"1":0,"2":0};
+    r.matches.forEach(m=>{
+      const w=winner(m);if(!w)return;
+      s[w]+=P;total[w]+=P;wins[w]++;played++;
+      const L=m.label||"Khác";
+      byLabel[L]=byLabel[L]||{"1":0,"2":0};byLabel[L][w]++;
+      [["1",m.a],["2",m.b]].forEach(([t,arr])=>arr.forEach(n=>{
+        mem[n]=mem[n]||{w:0,p:0,team:t};mem[n].p++;if(t===w)mem[n].w++;
+      }));
+    });
+    return s;
+  });
+  const roundWins={"1":0,"2":0,draw:0};
+  let roundsDone=0;
+  data.rounds.forEach((r,i)=>{
+    if(!isDone(r))return;roundsDone++;
+    const s=perRound[i];
+    if(s["1"]>s["2"])roundWins["1"]++;else if(s["2"]>s["1"])roundWins["2"]++;else roundWins.draw++;
+  });
+  return{P,total,wins,perRound,byLabel,mem,played,roundsDone,roundWins};
+}
+
+// ─── FIREBASE HOOK ───────────────────────────────────────────────────────────
+function useLeague(){
+  const [data,setData]=useState(()=>{
+    try{const c=localStorage.getItem(LS_KEY);if(c)return normalize(JSON.parse(c));}catch(e){}
+    return normalize(DEFAULT_DATA);
+  });
+  const [status,setStatus]=useState("connecting");
+  const [loaded,setLoaded]=useState(false);
+
+  useEffect(()=>{
+    let started=false;
+    const start=()=>{
+      const fb=window.__fb;if(!fb||started)return;started=true;
+      const r=fb.ref(fb.db,ROOT);
+      fb.onValue(r,snap=>{
+        const v=snap.val();
+        if(!v){fb.set(r,DEFAULT_DATA);return;}
+        const n=normalize(v);
+        setData(n);setLoaded(true);
+        try{localStorage.setItem(LS_KEY,JSON.stringify(n));}catch(e){}
+      },err=>{console.error(err);setStatus("offline");setLoaded(true);});
+      fb.onValue(fb.ref(fb.db,".info/connected"),s=>setStatus(s.val()?"live":"offline"));
+    };
+    if(window.__fb)start();else window.addEventListener("fb-ready",start);
+    const t=setTimeout(()=>{if(!window.__fb){setStatus("offline");setLoaded(true);}},8000);
+    return()=>{window.removeEventListener("fb-ready",start);clearTimeout(t);};
+  },[]);
+
+  // Ghi đúng nhánh dữ liệu thay đổi → nhiều điện thoại nhập cùng lúc không đè nhau
+  const save=useCallback((path,value)=>{
+    setData(prev=>normalize(setIn(prev,path,value)));
+    const fb=window.__fb;
+    if(fb){
+      const p=path.length?ROOT+"/"+path.join("/"):ROOT;
+      fb.set(fb.ref(fb.db,p),value).catch(e=>alert("Không lưu được: "+e.message));
+    }
+  },[]);
+
+  return{data,status,loaded,save};
+}
+
+// ─── ICONS ───────────────────────────────────────────────────────────────────
+const Svg=({children})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{children}</svg>;
+const IcChart=()=><Svg><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></Svg>;
+const IcEdit=()=><Svg><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></Svg>;
+const IcUsers=()=><Svg><circle cx="9" cy="7" r="4"/><path d="M2 21v-1a6 6 0 0112 0v1"/><path d="M16 3.1a4 4 0 010 7.8"/><path d="M22 21v-1a6 6 0 00-4-5.6"/></Svg>;
+const IcSliders=()=><Svg><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></Svg>;
+const IcTrash=()=><Svg><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></Svg>;
+const IcPen=()=><Svg><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></Svg>;
+const IcUp=()=><Svg><path d="M18 15l-6-6-6 6"/></Svg>;
+const IcDown=()=><Svg><path d="M6 9l6 6 6-6"/></Svg>;
+const IcLeft=()=><Svg><path d="M15 18l-6-6 6-6"/></Svg>;
+const IcRight=()=><Svg><path d="M9 18l6-6-6-6"/></Svg>;
+
+// ─── HERO ────────────────────────────────────────────────────────────────────
+function Hero({data,st,status}){
+  const lead=st.total["1"]===st.total["2"]?null:(st.total["1"]>st.total["2"]?"1":"2");
+  const S={live:["#4ade80","Realtime"],connecting:["#fbbf24","Đang kết nối"],offline:["#f87171","Offline"]}[status];
+  const Side=({t})=>(
+    <div className="side">
+      <div className="nm"><span className="tdot" style={{background:TEAM_COLOR[t],boxShadow:"0 0 0 2px rgba(255,255,255,.5)"}}/><span>{data.teams[t].name}</span></div>
+      <div className="pts">{st.total[t]}</div>
+      <div className="sub">{st.wins[t]} trận thắng</div>
+      <div className="lead" style={{visibility:lead===t?"visible":"hidden"}}>Dẫn đầu</div>
+    </div>
+  );
+  return(
+    <header className="hero">
+      <div className="hero-top">
+        <div className="brand"><small>Pickleball League</small><h1>Giải Hạng A · B</h1></div>
+        <div className="pill"><span className="dot" style={{background:S[0]}}/>{S[1]}</div>
+      </div>
+      <div className="board"><Side t="1"/><div className="vs">VS</div><Side t="2"/></div>
+      <div className="meta">
+        <div><b>{st.roundsDone}/{data.rounds.length}</b><span>Vòng hoàn thành</span></div>
+        <div><b>{st.played}</b><span>Trận đã đấu</span></div>
+        <div><b>{st.roundWins["1"]} – {st.roundWins["2"]}</b><span>Vòng thắng</span></div>
+      </div>
+    </header>
+  );
+}
+
+// ─── OVERVIEW ────────────────────────────────────────────────────────────────
+function Overview({data,st,go}){
+  const [rk,setRk]=useState("all");
+  const [sort,setSort]=useState("rate");
+  const t1=data.teams["1"].name,t2=data.teams["2"].name;
+
+  const rounds=data.rounds.map((r,i)=>({i,s:st.perRound[i],done:isDone(r),any:hasScore(r)})).filter(x=>x.any);
+
+  const labels=useMemo(()=>{
+    const keys=Object.keys(st.byLabel);
+    const order=data.config.template;
+    return keys.sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
+  },[st.byLabel,data.config.template]);
+
+  const members=useMemo(()=>{
+    const arr=[];
+    ["1","2"].forEach(t=>data.teams[t].members.forEach(m=>{
+      const s=st.mem[m.name]||{w:0,p:0};arr.push({name:m.name,rank:m.rank,team:t,w:s.w,p:s.p});
+    }));
+    Object.entries(st.mem).forEach(([n,s])=>{if(!arr.find(x=>x.name===n))arr.push({name:n,rank:"?",team:s.team,w:s.w,p:s.p});});
+    const rate=x=>x.p?x.w/x.p:-1;
+    return arr.filter(x=>rk==="all"||x.rank===rk).sort((a,b)=>
+      sort==="rate"?(rate(b)-rate(a)||b.w-a.w||b.p-a.p):(b.w-a.w||rate(b)-rate(a)));
+  },[data.teams,st.mem,rk,sort]);
+
+  const noMembers=!data.teams["1"].members.length&&!data.teams["2"].members.length;
+  if(noMembers&&!st.played){
+    return(
+      <div className="card empty">
+        <div style={{fontSize:34}}>🏓</div>
+        <div style={{fontWeight:800,color:"var(--ink)",fontSize:16,marginTop:4}}>Bắt đầu giải đấu mới</div>
+        <div className="steps">
+          <div><b>1.</b> Vào tab <b>Đội</b> để thêm thành viên & xếp Hạng A / Hạng B</div>
+          <div><b>2.</b> Vào <b>Cài đặt</b> để chỉnh thể thức các trận trong mỗi vòng</div>
+          <div><b>3.</b> Vào <b>Nhập liệu</b> để chọn người đánh & nhập tỉ số</div>
+        </div>
+        <button className="btn block" style={{marginTop:14}} onClick={()=>go("teams")}>Thêm thành viên</button>
+      </div>
+    );
+  }
+
+  return(<>
+    <div className="card">
+      <h2>Điểm từng vòng <span className="hint">Thắng 1 trận = {st.P} điểm</span></h2>
+      {rounds.length===0&&<div className="empty">Chưa có vòng nào có kết quả</div>}
+      {rounds.map(({i,s,done})=>{
+        const tot=s["1"]+s["2"];
+        const w=done?(s["1"]>s["2"]?"1":s["2"]>s["1"]?"2":"0"):null;
+        return(
+          <div className="rrow" key={i}>
+            <div className="rnum">Vòng {i+1}</div>
+            <div className={"rv"+(w&&w!=="1"?" dim":"")} style={{color:"var(--t1)"}}>{s["1"]}</div>
+            <div className="split">
+              {tot>0&&<i style={{width:(s["1"]/tot*100)+"%",background:"var(--t1)"}}/>}
+              {tot>0&&<i style={{width:(s["2"]/tot*100)+"%",background:"var(--t2)"}}/>}
+            </div>
+            <div className={"rv"+(w&&w!=="2"?" dim":"")} style={{color:"var(--t2)"}}>{s["2"]}</div>
+            <div className="rw" title={done?"Hoàn thành":"Đang đấu"}>{done?(w==="0"?"🤝":"✅"):"⏳"}</div>
+          </div>
+        );
+      })}
+      <div className="legend" style={{marginTop:10}}>
+        <span><span className="tdot" style={{background:"var(--t1)"}}/>{t1}</span>
+        <span><span className="tdot" style={{background:"var(--t2)"}}/>{t2}</span>
+        <span>✅ xong · ⏳ đang đấu</span>
+      </div>
+    </div>
+
+    {labels.length>0&&<div className="card">
+      <h2>Theo thể thức <span className="hint">Số trận thắng</span></h2>
+      {labels.map(L=>{
+        const x=st.byLabel[L],tot=x["1"]+x["2"];
+        return(
+          <div className="lrow" key={L}>
+            <div className="top">
+              <span style={{color:"var(--t1)"}}>{x["1"]}</span>
+              <span>{L}</span>
+              <span style={{color:"var(--t2)"}}>{x["2"]}</span>
+            </div>
+            <div className="split">
+              <i style={{width:(x["1"]/tot*100)+"%",background:"var(--t1)"}}/>
+              <i style={{width:(x["2"]/tot*100)+"%",background:"var(--t2)"}}/>
+            </div>
+          </div>
+        );
+      })}
+    </div>}
+
+    <div className="card">
+      <h2>Thành viên
+        <div className="seg">
+          {[["rate","Tỉ lệ"],["wins","Số thắng"]].map(([k,l])=><button key={k} className={sort===k?"on":""} onClick={()=>setSort(k)}>{l}</button>)}
+        </div>
+      </h2>
+      <div className="seg" style={{marginBottom:6}}>
+        {[["all","Tất cả"],["A","Hạng A"],["B","Hạng B"]].map(([k,l])=><button key={k} className={rk===k?"on":""} onClick={()=>setRk(k)}>{l}</button>)}
+      </div>
+      {members.length===0&&<div className="empty">Không có thành viên</div>}
+      {members.map((m,i)=>{
+        const pct=m.p?Math.round(m.w/m.p*100):null;
+        const col=pct==null?"#d4d0e2":pct>=70?"#16a34a":pct>=50?"#7c3aed":"#f97316";
+        return(
+          <div className="mrow" key={m.name}>
+            <div className={"pos"+(i<3&&m.p?" g":"")}>{i<3&&m.p?["🥇","🥈","🥉"][i]:i+1}</div>
+            <div style={{minWidth:0}}>
+              <div className="nm">
+                <span className="tdot" style={{background:TEAM_COLOR[m.team]}}/>
+                <span className="t">{m.name}</span>
+                {m.rank!=="?"&&<span className={"rk "+m.rank}>{m.rank}</span>}
+              </div>
+              <div className="s">{m.p?`${m.w} thắng / ${m.p} trận · ${m.w*st.P} điểm`:"Chưa thi đấu"}</div>
+              <div className="bar"><i style={{width:(pct||0)+"%",background:col}}/></div>
+            </div>
+            <div className="pct" style={{color:pct==null?"#b8b3cc":col}}>{pct==null?"–":pct+"%"}<small>{m.w}T</small></div>
+          </div>
+        );
+      })}
+    </div>
+  </>);
+}
+
+// ─── ENTRY ───────────────────────────────────────────────────────────────────
+function Picker({team,t,sel,onChange}){
+  const ms=[...team.members].sort((a,b)=>a.rank.localeCompare(b.rank));
+  const tog=n=>{
+    if(sel.includes(n))onChange(sel.filter(x=>x!==n));
+    else onChange(sel.length>=2?[sel[1],n]:[...sel,n]);
+  };
+  return(
+    <div className="chips">
+      {ms.map(m=>(
+        <button key={m.name} className={"chip"+(sel.includes(m.name)?" on"+t:"")} onClick={()=>tog(m.name)}>
+          <span className={"rk "+m.rank}>{m.rank}</span>{m.name}
+        </button>
+      ))}
+      {!ms.length&&<span className="muted" style={{fontSize:12}}>Chưa có thành viên</span>}
+    </div>
+  );
+}
+
+function MatchCard({m,mi,ri,data,save,isNext,onDelete}){
+  const w=winner(m);
+  const [open,setOpen]=useState(!w);
+  const [label,setLabel]=useState(m.label);
+  useEffect(()=>setLabel(m.label),[m.label]);
+  const base=["rounds",ri,"matches",mi];
+  const P=data.config.ptsWin;
+  const tie=m.sa!==""&&m.sb!==""&&Number(m.sa)===Number(m.sb);
+  const Side=({t})=>{
+    const key=t==="1"?"a":"b";
+    const won=w===t;
+    return(
+      <div className={"mside"+(won?" win"+t:"")}>
+        <div className="tn">
+          <span style={{color:TEAM_COLOR[t]}}>{data.teams[t].name}</span>
+          {won&&<span className="wl" style={{background:TEAM_COLOR[t]}}>+{P}</span>}
+        </div>
+        <div className={"picked"+(m[key].length?"":" none")}>{m[key].length?m[key].join(" & "):"Chọn người đánh"}</div>
+        {open&&<Picker team={data.teams[t]} t={t} sel={m[key]} onChange={v=>save([...base,key],v)}/>}
+      </div>
+    );
+  };
+  return(
+    <div className={"match"+(isNext?" next":"")}>
+      <div className="mhead">
+        <span className="mno">Trận {mi+1}</span>
+        <input className="mlabel" value={label} placeholder="Tên thể thức"
+          onChange={e=>setLabel(e.target.value)}
+          onBlur={()=>{if(label!==m.label)save([...base,"label"],label);}}/>
+        {w?<span className="tag ok">Xong</span>:isNext?<span className="tag live">Đang đấu</span>:null}
+        <button className="iconbtn" title={open?"Thu gọn":"Đổi người"} onClick={()=>setOpen(!open)}>{open?<IcUp/>:<IcPen/>}</button>
+        <button className="iconbtn" title="Xoá trận" onClick={onDelete}><IcTrash/></button>
+      </div>
+      <div className="mbody"><Side t="1"/><Side t="2"/></div>
+      <div className="score">
+        <input type="number" inputMode="numeric" min="0" value={m.sa} className={w==="1"?"w1":""} placeholder="0"
+          onChange={e=>save([...base,"sa"],e.target.value)}/>
+        <span className="colon">:</span>
+        <input type="number" inputMode="numeric" min="0" value={m.sb} className={w==="2"?"w2":""} placeholder="0"
+          onChange={e=>save([...base,"sb"],e.target.value)}/>
+      </div>
+      {tie&&<div className="warnline">Tỉ số đang hoà — trận chưa được tính điểm</div>}
+    </div>
+  );
+}
+
+function Entry({data,save,loaded,go}){
+  const [ri,setRi]=useState(0);
+  const picked=useRef(false);
+  const stripRef=useRef(null);
+
+  // Lần đầu mở: nhảy tới vòng chưa hoàn thành gần nhất
+  useEffect(()=>{
+    if(picked.current||!loaded||!data.rounds.length)return;
+    let i=data.rounds.findIndex(r=>!isDone(r));
+    if(i<0)i=data.rounds.length-1;
+    setRi(i);picked.current=true;
+  },[loaded,data.rounds]);
+
+  useEffect(()=>{
+    const strip=stripRef.current;if(!strip)return;
+    const el=strip.querySelector(".rchip.on");
+    if(el)strip.scrollLeft=el.offsetLeft-strip.clientWidth/2+el.clientWidth/2;
+  },[ri,data.rounds.length]);
+
+  if(!data.rounds.length)return <div className="card empty">Chưa có vòng đấu nào — vào <b>Cài đặt</b> để tạo.</div>;
+  const idx=Math.min(ri,data.rounds.length-1);
+  const r=data.rounds[idx];
+  const P=data.config.ptsWin;
+  const s={"1":0,"2":0};r.matches.forEach(m=>{const w=winner(m);if(w)s[w]+=P;});
+  const doneN=r.matches.filter(m=>winner(m)).length;
+  const nextI=r.matches.findIndex(m=>!winner(m));
+  const noMembers=!data.teams["1"].members.length||!data.teams["2"].members.length;
+  const status=isDone(r)?["ok","Hoàn thành"]:hasScore(r)?["live","Đang đấu"]:["idle","Chưa bắt đầu"];
+
+  const addMatch=()=>{
+    const tp=data.config.template;
+    save(["rounds",idx,"matches"],[...r.matches,blankMatch(tp[r.matches.length%tp.length]||"")]);
+  };
+  const delMatch=mi=>{
+    if(!confirm(`Xoá Trận ${mi+1} của Vòng ${idx+1}?`))return;
+    save(["rounds",idx,"matches"],r.matches.filter((_,j)=>j!==mi));
+  };
+
+  return(<>
+    {noMembers&&<div className="banner"><span>Một đội chưa có thành viên.</span><button className="btn sm" onClick={()=>go("teams")}>Thêm ngay</button></div>}
+    <div className="card" style={{padding:"14px 12px"}}>
+      <div className="rstrip" ref={stripRef}>
+        {data.rounds.map((x,i)=>{
+          const cls=i===idx?" on":isDone(x)?" done":hasScore(x)?" part":"";
+          return <button key={i} className={"rchip"+cls} onClick={()=>setRi(i)}><small>Vòng</small>{i+1}</button>;
+        })}
+      </div>
+      <div className="legend">
+        <span><span className="dot" style={{background:"var(--p)"}}/>Đã xong</span>
+        <span><span className="dot" style={{background:"var(--warn)"}}/>Đang nhập</span>
+      </div>
+    </div>
+
+    <div className="card">
+      <div className="rhead">
+        <button className="iconbtn" disabled={idx===0} onClick={()=>setRi(idx-1)}><IcLeft/></button>
+        <h3>Vòng {idx+1}</h3>
+        <span className={"tag "+status[0]}>{status[1]}</span>
+        <button className="iconbtn" disabled={idx===data.rounds.length-1} onClick={()=>setRi(idx+1)}><IcRight/></button>
+      </div>
+      <div className="mini">
+        <div className="s"><div style={{color:"var(--t1)"}}>{data.teams["1"].name}</div><b style={{color:"var(--t1)"}}>{s["1"]}</b></div>
+        <div className="c">ĐIỂM VÒNG</div>
+        <div className="s"><div style={{color:"var(--t2)"}}>{data.teams["2"].name}</div><b style={{color:"var(--t2)"}}>{s["2"]}</b></div>
+      </div>
+      <div className="prog"><i style={{width:(r.matches.length?doneN/r.matches.length*100:0)+"%"}}/></div>
+      <div className="muted" style={{fontSize:11.5,marginTop:6,textAlign:"center"}}>{doneN}/{r.matches.length} trận đã có kết quả</div>
+    </div>
+
+    {r.matches.map((m,mi)=>(
+      <MatchCard key={idx+"-"+mi} m={m} mi={mi} ri={idx} data={data} save={save}
+        isNext={mi===nextI} onDelete={()=>delMatch(mi)}/>
+    ))}
+    <button className="btn ghost block" onClick={addMatch}>+ Thêm trận vào vòng {idx+1}</button>
+  </>);
+}
+
+// ─── TEAMS ───────────────────────────────────────────────────────────────────
+function TeamCard({t,data,save}){
+  const team=data.teams[t];
+  const [name,setName]=useState(team.name);
+  useEffect(()=>setName(team.name),[team.name]);
+  const [nm,setNm]=useState("");
+  const [rk,setRk]=useState("A");
+  const exists=n=>["1","2"].some(x=>data.teams[x].members.some(m=>m.name.toLowerCase()===n.toLowerCase()));
+
+  const add=()=>{
+    const n=nm.trim();if(!n)return;
+    if(exists(n)){alert(`"${n}" đã có trong danh sách`);return;}
+    save(["teams",t,"members"],[...team.members,{name:n,rank:rk}]);setNm("");
+  };
+  const remove=i=>{
+    if(!confirm(`Xoá ${team.members[i].name} khỏi ${team.name}?`))return;
+    save(["teams",t,"members"],team.members.filter((_,j)=>j!==i));
+  };
+  const rename=i=>{
+    const old=team.members[i].name;
+    const n=(prompt("Đổi tên thành viên",old)||"").trim();
+    if(!n||n===old)return;
+    if(n.toLowerCase()!==old.toLowerCase()&&exists(n)){alert(`"${n}" đã có trong danh sách`);return;}
+    save(["teams",t,"members",i,"name"],n);
+    // cập nhật tên trong các trận đã nhập
+    const key=t==="1"?"a":"b";
+    if(data.rounds.some(r=>r.matches.some(m=>m[key].includes(old))))
+      save(["rounds"],data.rounds.map(r=>({matches:r.matches.map(m=>({...m,[key]:m[key].map(x=>x===old?n:x)}))})));
+  };
+
+  const Group=({r})=>{
+    const list=team.members.map((m,i)=>({...m,i})).filter(m=>m.rank===r);
+    return(
+      <div className="group">
+        <div className="gt"><span className={"rk "+r}>{r}</span>Hạng {r} · {list.length}</div>
+        {list.length===0&&<div className="muted" style={{fontSize:12,padding:"4px 0"}}>Chưa có</div>}
+        {list.map(m=>(
+          <div className="mem" key={m.name}>
+            <span className="n">{m.name}</span>
+            <div className="seg">
+              {["A","B"].map(x=><button key={x} className={m.rank===x?"on":""} onClick={()=>m.rank!==x&&save(["teams",t,"members",m.i,"rank"],x)}>{x}</button>)}
+            </div>
+            <button className="iconbtn" title="Đổi tên" onClick={()=>rename(m.i)}><IcPen/></button>
+            <button className="iconbtn" title="Xoá" onClick={()=>remove(m.i)}><IcTrash/></button>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return(
+    <div className="card" style={{borderTop:`4px solid ${TEAM_COLOR[t]}`}}>
+      <div className="thead">
+        <span className="tdot" style={{background:TEAM_COLOR[t],width:14,height:14}}/>
+        <input className="field" value={name} onChange={e=>setName(e.target.value)}
+          onBlur={()=>{const v=name.trim()||("Đội "+t);setName(v);if(v!==team.name)save(["teams",t,"name"],v);}}/>
+      </div>
+      <Group r="A"/>
+      <Group r="B"/>
+      <div className="addrow">
+        <input className="field" placeholder="Tên thành viên mới" value={nm} onChange={e=>setNm(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/>
+        <div className="seg" style={{alignSelf:"center"}}>
+          {["A","B"].map(x=><button key={x} className={rk===x?"on":""} onClick={()=>setRk(x)}>{x}</button>)}
+        </div>
+        <button className="btn" onClick={add}>Thêm</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
+function Settings({data,save}){
+  const [pts,setPts]=useState(String(data.config.ptsWin));
+  useEffect(()=>setPts(String(data.config.ptsWin)),[data.config.ptsWin]);
+  const [nr,setNr]=useState(String(data.rounds.length));
+  useEffect(()=>setNr(String(data.rounds.length)),[data.rounds.length]);
+  const [nl,setNl]=useState("");
+  const fileRef=useRef(null);
+  const tp=data.config.template;
+
+  const applyPts=()=>{const n=parseInt(pts);if(n>0&&n!==data.config.ptsWin)save(["config","ptsWin"],n);else setPts(String(data.config.ptsWin));};
+  const applyRounds=()=>{
+    const n=Math.max(1,Math.min(60,parseInt(nr)||0));
+    const cur=data.rounds;
+    if(!n||n===cur.length){setNr(String(cur.length));return;}
+    if(n>cur.length){save(["rounds"],[...cur,...buildRounds(n-cur.length,tp)]);return;}
+    if(cur.slice(n).some(hasData)&&!confirm(`Các vòng ${n+1}–${cur.length} đã có dữ liệu và sẽ bị xoá. Tiếp tục?`)){setNr(String(cur.length));return;}
+    save(["rounds"],cur.slice(0,n));
+  };
+  const setTp=next=>save(["config","template"],next);
+  const move=(i,d)=>{const j=i+d;if(j<0||j>=tp.length)return;const n=[...tp];[n[i],n[j]]=[n[j],n[i]];setTp(n);};
+  const addTp=()=>{const v=nl.trim();if(!v)return;setTp([...tp,v]);setNl("");};
+  const delTp=i=>{if(tp.length<=1){alert("Cần ít nhất 1 trận mỗi vòng");return;}setTp(tp.filter((_,j)=>j!==i));};
+  const renameTp=i=>{const v=(prompt("Tên thể thức",tp[i])||"").trim();if(v&&v!==tp[i])setTp(tp.map((x,j)=>j===i?v:x));};
+
+  const emptyRounds=data.rounds.filter(r=>!hasData(r)).length;
+  const applyTemplate=()=>{
+    if(!emptyRounds){alert("Không còn vòng nào trống để áp dụng");return;}
+    if(!confirm(`Áp dụng thể thức mới (${tp.length} trận) cho ${emptyRounds} vòng chưa nhập dữ liệu?`))return;
+    save(["rounds"],data.rounds.map(r=>hasData(r)?r:{matches:tp.map(blankMatch)}));
+  };
+
+  const exportJson=()=>{
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download="pickleball-ab-"+new Date().toISOString().slice(0,10)+".json";a.click();
+  };
+  const importJson=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{
+      try{
+        const d=normalize(JSON.parse(rd.result));
+        if(confirm("Ghi đè toàn bộ dữ liệu hiện tại bằng file này?"))save([],d);
+      }catch(err){alert("File không hợp lệ");}
+      e.target.value="";
+    };
+    rd.readAsText(f);
+  };
+  const clearResults=()=>{
+    if(!confirm("Xoá toàn bộ tỉ số & người đánh của mọi vòng? (Giữ nguyên thành viên và thể thức)"))return;
+    save(["rounds"],data.rounds.map(r=>({matches:r.matches.map(m=>({...m,a:[],b:[],sa:"",sb:""}))})));
+  };
+
+  return(<>
+    <div className="card">
+      <h2>Tính điểm & số vòng</h2>
+      <div className="set">
+        <div><div className="t">Điểm mỗi trận thắng</div><div className="d">Cộng cho đội thắng trận</div></div>
+        <input className="field num" type="number" inputMode="numeric" value={pts} onChange={e=>setPts(e.target.value)} onBlur={applyPts}/>
+      </div>
+      <div className="set">
+        <div><div className="t">Số vòng đấu</div><div className="d">Hiện có {data.rounds.length} vòng</div></div>
+        <div className="row">
+          <input className="field num" type="number" inputMode="numeric" value={nr} onChange={e=>setNr(e.target.value)}/>
+          <button className="btn sm" onClick={applyRounds}>Lưu</button>
+        </div>
+      </div>
+    </div>
+
+    <div className="card">
+      <h2>Thể thức mỗi vòng <span className="hint">{tp.length} trận, đấu lần lượt</span></h2>
+      {tp.map((x,i)=>(
+        <div className="tpl" key={i+x}>
+          <span className="i">{i+1}</span>
+          <span className="n">{x}</span>
+          <button className="iconbtn" onClick={()=>move(i,-1)} disabled={i===0}><IcUp/></button>
+          <button className="iconbtn" onClick={()=>move(i,1)} disabled={i===tp.length-1}><IcDown/></button>
+          <button className="iconbtn" onClick={()=>renameTp(i)}><IcPen/></button>
+          <button className="iconbtn" onClick={()=>delTp(i)}><IcTrash/></button>
+        </div>
+      ))}
+      <div className="row" style={{marginTop:10}}>
+        <input className="field" placeholder="VD: Đôi Hạng A, Đơn Hạng B…" value={nl} onChange={e=>setNl(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTp()}/>
+        <button className="btn" onClick={addTp}>Thêm</button>
+      </div>
+      <button className="btn ghost block" style={{marginTop:10}} onClick={applyTemplate}>
+        Áp dụng cho {emptyRounds} vòng chưa nhập
+      </button>
+      <div className="muted" style={{fontSize:11.5,marginTop:8}}>Vòng đã có dữ liệu giữ nguyên. Vòng mới tạo thêm sẽ tự dùng thể thức này. Bạn cũng có thể thêm/xoá trận riêng cho từng vòng ở tab Nhập liệu.</div>
+    </div>
+
+    <div className="card">
+      <h2>Dữ liệu</h2>
+      <div className="row" style={{flexWrap:"wrap"}}>
+        <button className="btn ghost sm" onClick={exportJson}>Xuất file sao lưu</button>
+        <button className="btn ghost sm" onClick={()=>fileRef.current.click()}>Nhập từ file</button>
+        <button className="btn danger sm" onClick={clearResults}>Xoá toàn bộ kết quả</button>
+        <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={importJson}/>
+      </div>
+      <div className="muted" style={{fontSize:11.5,marginTop:10}}>Giải cũ (3 đội) vẫn ở: <a href="../">tuanle-coder.github.io/pickleball-league</a></div>
+    </div>
+  </>);
+}
+
+// ─── APP ─────────────────────────────────────────────────────────────────────
+function App(){
+  const {data,status,loaded,save}=useLeague();
+  const [tab,setTab]=useState("home");
+  const st=useMemo(()=>computeStats(data),[data]);
+  const go=t=>{setTab(t);window.scrollTo({top:0});};
+  const TABS=[["home","Tổng quan",IcChart],["entry","Nhập liệu",IcEdit],["teams","Đội",IcUsers],["settings","Cài đặt",IcSliders]];
+  return(
+    <div className="app">
+      <Hero data={data} st={st} status={status}/>
+      <main>
+        {tab==="home"&&<Overview data={data} st={st} go={go}/>}
+        {tab==="entry"&&<Entry data={data} save={save} loaded={loaded} go={go}/>}
+        {tab==="teams"&&<>{["1","2"].map(t=><TeamCard key={t} t={t} data={data} save={save}/>)}</>}
+        {tab==="settings"&&<Settings data={data} save={save}/>}
+      </main>
+      <nav className="tabbar">
+        {TABS.map(([k,l,I])=><button key={k} className={tab===k?"on":""} onClick={()=>go(k)}><I/>{l}</button>)}
+      </nav>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
