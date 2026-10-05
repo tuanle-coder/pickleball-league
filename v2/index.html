@@ -302,6 +302,10 @@ button.hlc{font:inherit;color:inherit}
 .pr .n2 .df{width:34px;flex:0 0 auto;font-size:12px;text-align:right;margin-right:8px}
 .pr .big{min-width:62px;padding-left:4px}
 
+/* dải phân cách trận đã xong */
+.donesep{display:flex;align-items:center;gap:10px;margin:16px 2px 10px;font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--good)}
+.donesep::before,.donesep::after{content:"";flex:1;height:1px;background:var(--line2)}
+
 /* ANALYTICS */
 .plist .pr{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font:inherit;color:inherit}
 .plist .pr:first-child{border-top:0}
@@ -315,8 +319,8 @@ button.hlc{font:inherit;color:inherit}
 .pr .big small{display:block;font-size:10px;color:var(--muted);font-weight:700;margin-top:2px;font-family:"Google Sans",sans-serif}
 .form{display:inline-flex;gap:3px}
 .form i{width:16px;height:16px;border-radius:4px;font-style:normal;font-family:var(--disp);font-size:9px;font-weight:900;display:grid;place-items:center}
-.form i.w{background:var(--grad);color:#fff}
-.form i.l{background:#efe6d6;color:var(--muted)}
+.form i.w{background:#2f855a;color:#fff}
+.form i.l{background:#d64545;color:#fff}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 
 /* SHEET */
@@ -852,7 +856,7 @@ function Picker({team,t,sel,onChange,rank}){
   );
 }
 
-function MatchCard({m,mi,ri,data,save,isNext,onDelete}){
+function MatchCard({m,mi,ri,data,save,isNext,onDelete,onScoreBlur}){
   const w=winner(m);
   const [open,setOpen]=useState(!w);
   const [label,setLabel]=useState(m.label);
@@ -890,10 +894,10 @@ function MatchCard({m,mi,ri,data,save,isNext,onDelete}){
       <div className="cols">{col("1")}{col("2")}</div>
       <div className="score">
         <input type="number" inputMode="numeric" min="0" value={m.sa} placeholder="0" className={w==="1"?"w":""} style={{"--tc":TEAM_HEX["1"]}}
-          onChange={e=>save([...base,"sa"],e.target.value)}/>
+          onChange={e=>save([...base,"sa"],e.target.value)} onBlur={onScoreBlur}/>
         <span className="colon">:</span>
         <input type="number" inputMode="numeric" min="0" value={m.sb} placeholder="0" className={w==="2"?"w":""} style={{"--tc":TEAM_HEX["2"]}}
-          onChange={e=>save([...base,"sb"],e.target.value)}/>
+          onChange={e=>save([...base,"sb"],e.target.value)} onBlur={onScoreBlur}/>
       </div>
       {tie&&<div className="warnline2">Tỉ số đang hoà — trận chưa được tính điểm</div>}
     </div>
@@ -904,6 +908,15 @@ function Entry({data,save,loaded,go}){
   const [ri,setRi]=useState(0);
   const picked=useRef(false);
   const stripRef=useRef(null);
+  // Thứ tự hiển thị: trận chưa xong lên trước, trận đã xong xuống cuối.
+  // Chỉ sắp xếp lại khi đổi vòng hoặc sau khi rời ô tỉ số, để thẻ không nhảy chỗ lúc đang gõ.
+  const [sortTick,setSortTick]=useState(0);
+  const frozen=useRef({key:"",order:[]});
+  const resort=useCallback(()=>setTimeout(()=>{
+    const a=document.activeElement;
+    if(a&&a.closest&&a.closest(".score"))return;
+    setSortTick(t=>t+1);
+  },300),[]);
 
   // Lần đầu mở: nhảy tới vòng chưa hoàn thành gần nhất
   useEffect(()=>{
@@ -931,6 +944,14 @@ function Entry({data,save,loaded,go}){
   const diff=roundDiff(r);
   const dates=roundDates(data);
   const dd=dates[idx];
+  const sortKey=idx+"|"+r.matches.length+"|"+sortTick;
+  if(frozen.current.key!==sortKey){
+    const und=[],dn=[];
+    r.matches.forEach((m,i)=>(winner(m)?dn:und).push(i));
+    frozen.current={key:sortKey,order:[...und,...dn],firstDone:dn.length?und.length:-1};
+  }
+  const order=frozen.current.order;
+  const firstDone=frozen.current.firstDone;
 
   const addMatch=()=>{
     const tp=data.config.template;
@@ -980,9 +1001,12 @@ function Entry({data,save,loaded,go}){
       {s["1"]===s["2"]&&doneN>0&&<div className="rmeta" style={{color:"var(--warn)",fontWeight:700}}>Đang hoà điểm vòng → phân định bằng hiệu số</div>}
     </div>
 
-    {r.matches.map((m,mi)=>(
-      <MatchCard key={idx+"-"+mi} m={m} mi={mi} ri={idx} data={data} save={save}
-        isNext={mi===nextI} onDelete={()=>delMatch(mi)}/>
+    {order.map((mi,k)=>(
+      <React.Fragment key={idx+"-"+mi}>
+        {k===firstDone&&k>0&&<div className="donesep"><span>Đã xong · {order.length-k} trận</span></div>}
+        <MatchCard m={r.matches[mi]} mi={mi} ri={idx} data={data} save={save}
+          isNext={mi===nextI} onDelete={()=>delMatch(mi)} onScoreBlur={resort}/>
+      </React.Fragment>
     ))}
     <button className="btn ghost block" onClick={addMatch}>+ Thêm trận vào vòng {idx+1}</button>
   </>);
