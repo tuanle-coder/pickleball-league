@@ -315,6 +315,29 @@ button.hlc{font:inherit;color:inherit}
 .court.c2{background:#2f855a;border-color:#2f855a;color:#fff}
 .lblrow{padding:10px 12px;border-bottom:1px solid var(--line);background:var(--card2)}
 
+/* điểm nhấn theo hạng */
+.hlh{display:flex;align-items:center;gap:8px}
+.mvp{width:100%;display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:8px;border-radius:6px;text-align:left;font:inherit;color:inherit;
+  border:1.5px solid #e6cf98;background:linear-gradient(135deg,#fffaf0,#f6e3b4)}
+.mvp .crown{font-size:30px;line-height:1}
+.mvp .mi{flex:1;min-width:0}
+.mvp .k{font-family:var(--disp);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold2)}
+.mvp .v{font-family:var(--disp);font-size:20px;font-weight:700;color:var(--brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mvp .s{font-size:12px;font-weight:700;color:var(--tc);display:flex;align-items:center;gap:5px}
+.mvp .ms{text-align:center;min-width:52px;padding:6px 4px;border-radius:4px;background:rgba(255,255,255,.7);border:1px solid #efdcb3}
+.mvp .ms b{display:block;font-family:var(--disp);font-size:18px;font-weight:700;color:var(--brown)}
+.mvp .ms span{font-size:10.5px;color:var(--ink2);font-weight:600}
+.hl3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hl3 .hlc{padding:10px}
+.hl3 .hlc .v{font-size:13.5px}
+.hl3 .hlc .k{font-size:9px;letter-spacing:.08em}
+/* Final Battle */
+.mhead.final{background:var(--grad);border-bottom-color:#c9a14a}
+.mhead.final .mno{background:var(--brown);color:#f0d999}
+.mhead.final .mtitle2{color:var(--brown);font-weight:700}
+.mhead.final .mtime2{color:var(--brown)}
+.mhead.final .iconbtn{color:var(--brown)}
+
 /* ANALYTICS */
 .plist .pr{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font:inherit;color:inherit}
 .plist .pr:first-child{border-top:0}
@@ -472,6 +495,7 @@ function courtOf(label){const m=(label||"").match(COURT_RE);return m?m[1]:"";}
 function cleanLabel(label){return(label||"").replace(TIME_RE,"").replace(COURT_RE," ").replace(/\s*·\s*$/,"").trim()||"Trận";}
 // Tên ngắn cho thanh tiêu đề trận trên điện thoại
 function shortLabel(label){const c=cleanLabel(label),l=c.toLowerCase();
+  if(/final/.test(l))return"🏆 Final Battle";
   if(/hỗn\s*hợp/.test(l))return"Hỗn hợp";if(/hạng\s*a\b/.test(l))return"Hạng A";if(/hạng\s*b\b/.test(l))return"Hạng B";return c;}
 function rankOfLabel(label){const s=(label||"").toLowerCase();if(/hạng\s*a\b/.test(s)&&!/hạng\s*b\b/.test(s))return"A";if(/hạng\s*b\b/.test(s)&&!/hạng\s*a\b/.test(s))return"B";return null;}
 function initials(n){const p=n.trim().split(/\s+/);return((p.length>1?p[p.length-2][0]:"")+p[p.length-1][0]).toUpperCase();}
@@ -732,20 +756,17 @@ function Overview({data,st,an,go,openMember}){
     </div>
   );
 
-  // trận tiếp theo
-  let nx=null;
-  for(let ri=0;ri<data.rounds.length&&!nx;ri++){
-    const mi=data.rounds[ri].matches.findIndex(m=>!winner(m));
-    if(mi>=0)nx={ri,mi,m:data.rounds[ri].matches[mi]};
-  }
-
-  const ps=Object.values(an.pl).filter(x=>x.p>0);
-  const mvp=[...ps].sort((a,b)=>b.w-a.w||b.pct-a.pct||b.diff-a.diff)[0];
-  const pairList=Object.values(an.pairs);
-  const minP=pairList.some(p=>p.p>=2)?2:1;
-  const bestPair=pairList.filter(p=>p.p>=minP).sort((a,b)=>b.w/b.p-a.w/a.p||b.w-a.w)[0];
-  const hot=ps.filter(x=>x.streak&&x.streak.won).sort((a,b)=>b.streak.n-a.streak.n||b.w-a.w)[0];
-  const big=an.big;
+  // Điểm nhấn theo từng hạng
+  const hlFor=rk=>{
+    const ps=Object.values(an.pl).filter(x=>x.p>0&&x.rank===rk);
+    const mvp=[...ps].sort((a,b)=>b.w-a.w||b.pct-a.pct||b.diff-a.diff)[0];
+    const pairs=Object.values(an.pairs).filter(p=>p.names.every(n=>(an.pl[n]||{}).rank===rk));
+    const minP=pairs.some(p=>p.p>=2)?2:1;
+    const bestPair=pairs.filter(p=>p.p>=minP).sort((a,b)=>b.w/b.p-a.w/a.p||b.w-a.w)[0];
+    const hot=ps.filter(x=>x.streak&&x.streak.won&&x.streak.n>=2).sort((a,b)=>b.streak.n-a.streak.n||b.w-a.w)[0];
+    const top=[...ps].sort((a,b)=>b.diff-a.diff)[0];
+    return{mvp,bestPair,hot,top,n:ps.length};
+  };
 
   const dates=roundDates(data);
   const rounds=data.rounds.map((r,i)=>({i,s:st.perRound[i],done:isDone(r),any:hasScore(r),r})).filter(x=>x.any);
@@ -779,27 +800,30 @@ function Overview({data,st,an,go,openMember}){
       <button className="btn block" onClick={()=>go("teams")}>Thêm thành viên</button>
     </div>}
 
-    {nx&&!noMembers&&<div className="card next">
-      <div className="ch"><span className="eyebrow">▶ Trận tiếp theo</span><span className="mono muted" style={{fontSize:11}}>{fmtShort(dates[nx.ri].iso)?fmtShort(dates[nx.ri].iso)+" · ":""}V{nx.ri+1} · #{nx.mi+1}{courtOf(nx.m.label)?" · Sân "+courtOf(nx.m.label):""}{timeOf(nx.m.label)?" · "+timeOf(nx.m.label):""}</span></div>
-      <div style={{fontWeight:800,fontSize:15,marginBottom:8}}>{cleanLabel(nx.m.label)}</div>
-      <div className="vsrow">
-        <div className="pr" style={{color:"var(--t1)"}}>{nx.m.a.length?nx.m.a.join(" & "):"Chưa chọn"}</div>
-        <div className="x">VS</div>
-        <div className="pr" style={{color:"var(--t2)"}}>{nx.m.b.length?nx.m.b.join(" & "):"Chưa chọn"}</div>
-      </div>
-      <button className="btn block" onClick={()=>go("entry")}>Nhập kết quả →</button>
-    </div>}
-
-    {st.played>0&&<div className="card">
-      <div className="ch"><h2>Điểm nhấn</h2><span className="hint">Cập nhật realtime</span></div>
-      <div className="hl">
-        {mvp&&<button className="hlc" onClick={()=>openMember(mvp.name)}><div className="ic">👑</div><div className="k">MVP</div><div className="v">{mvp.name}</div><div className="s mono">{mvp.w} thắng · {pctTxt(mvp.pct)}</div></button>}
-        {bestPair&&<div className="hlc"><div className="ic">🤝</div><div className="k">Cặp ăn ý</div><div className="v">{bestPair.names.join(" & ")}</div><div className="s mono">{bestPair.w}/{bestPair.p} thắng</div></div>}
-        {hot?<button className="hlc" onClick={()=>openMember(hot.name)}><div className="ic">🔥</div><div className="k">Đang hưng phấn</div><div className="v">{hot.name}</div><div className="s mono">chuỗi {hot.streak.n} thắng</div></button>
-            :<div className="hlc"><div className="ic">🔥</div><div className="k">Đang hưng phấn</div><div className="v muted">—</div><div className="s">Chưa có chuỗi thắng</div></div>}
-        {big&&<div className="hlc"><div className="ic">⚡</div><div className="k">Thắng đậm nhất</div><div className="v">{(big.w==="1"?big.m.a:big.m.b).join(" & ")||data.teams[big.w].name}</div><div className="s mono">{big.m.sa}–{big.m.sb} · V{big.ri+1}</div></div>}
-      </div>
-    </div>}
+    {st.played>0&&["A","B"].map(rk=>{
+      const h=hlFor(rk);if(!h.n)return null;
+      return(
+      <div className="card" key={rk}>
+        <div className="ch"><h2 className="hlh"><span className={"rk "+rk}>{rk}</span>Điểm nhấn Hạng {rk}</h2><span className="hint">Cập nhật realtime</span></div>
+        {h.mvp&&<button className="mvp" onClick={()=>openMember(h.mvp.name)} style={{"--tc":TEAM_HEX[h.mvp.team],"--tcl":TEAM_LIGHT[h.mvp.team]}}>
+          <span className="crown">👑</span>
+          <div className="mi">
+            <div className="k">MVP Hạng {rk}</div>
+            <div className="v">{h.mvp.name}</div>
+            <div className="s"><span className="tdot" style={{background:TEAM_COLOR[h.mvp.team]}}/>{data.teams[h.mvp.team].name}</div>
+          </div>
+          <div className="ms"><b>{h.mvp.w}</b><span>thắng</span></div>
+          <div className="ms"><b>{pctTxt(h.mvp.pct)}</b><span>tỉ lệ</span></div>
+        </button>}
+        <div className="hl3">
+          <div className="hlc"><div className="ic">🤝</div><div className="k">Cặp ăn ý</div>
+            {h.bestPair?<><div className="v">{h.bestPair.names.join(" & ")}</div><div className="s mono">{h.bestPair.w}/{h.bestPair.p} thắng</div></>:<div className="v muted">—</div>}</div>
+          {h.hot?<button className="hlc" onClick={()=>openMember(h.hot.name)}><div className="ic">🔥</div><div className="k">Chuỗi thắng</div><div className="v">{h.hot.name}</div><div className="s mono">{h.hot.streak.n} trận liền</div></button>
+               :<div className="hlc"><div className="ic">🔥</div><div className="k">Chuỗi thắng</div><div className="v muted">—</div><div className="s">Chưa có</div></div>}
+          {h.top&&<button className="hlc" onClick={()=>openMember(h.top.name)}><div className="ic">⚡</div><div className="k">Hiệu số tốt nhất</div><div className="v">{h.top.name}</div><div className="s mono">{sgn(h.top.diff)} điểm</div></button>}
+        </div>
+      </div>);
+    })}
 
     <div className="card">
       <div className="ch"><h2>Điểm từng vòng</h2><span className="hint">Thắng 1 trận = {st.P} điểm</span></div>
@@ -897,7 +921,7 @@ function MatchCard({m,mi,ri,data,save,isNext,onDelete,onScoreBlur}){
 
   return(
     <div className={"match"+(isNext?" is-next":"")}>
-      <div className={"mhead"+(mi%2?" alt":"")}>
+      <div className={"mhead"+(/final/i.test(m.label)?" final":mi%2?" alt":"")}>
         <span className="mno">Trận {mi+1}</span>
         <span className="mtitle2">{shortLabel(m.label)}</span>
         {courtOf(m.label)&&<span className={"court c"+courtOf(m.label)}>Sân {courtOf(m.label)}</span>}
