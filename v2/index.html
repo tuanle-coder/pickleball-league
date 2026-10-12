@@ -517,10 +517,10 @@ function hasData(r){return r.matches.some(m=>m.sa!==""||m.sb!==""||m.a.length||m
 // Hiệu số điểm của vòng (tổng điểm bóng Team 1 − Team 2), dùng để phân định khi hoà điểm vòng
 // Final Battle chỉ tính thắng/thua & điểm cộng, không tính tỉ số vào hiệu số
 function roundDiff(r){return r.matches.reduce((d,m)=>winner(m)&&!isFinal(m)?d+Number(m.sa)-Number(m.sb):d,0);}
+// Thắng vòng theo điểm vòng; bằng điểm thì hoà ("0")
 function roundWinner(r,s){
   if(s["1"]!==s["2"])return s["1"]>s["2"]?"1":"2";
-  const d=roundDiff(r);
-  return d>0?"1":d<0?"2":"0";
+  return"0";
 }
 
 // ─── LỊCH THI ĐẤU ────────────────────────────────────────────────────────────
@@ -802,7 +802,7 @@ function Overview({data,st,an,go,openMember}){
       <div className="kpis">
         <div className="kpi"><b>{st.roundsDone}<span className="muted" style={{fontSize:12}}>/{data.rounds.length}</span></b><span>Vòng xong</span></div>
         <div className="kpi"><b>{st.played}</b><span>Trận đã đấu</span></div>
-        <div className="kpi"><b>{st.roundWins["1"]}–{st.roundWins["2"]}</b><span>Vòng thắng</span></div>
+        <div className="kpi"><b>{st.roundWins["1"]}–{st.roundWins["2"]}</b><span>Vòng thắng{st.roundWins.draw?` · ${st.roundWins.draw} hoà`:""}</span></div>
       </div>
     </section>
 
@@ -843,7 +843,6 @@ function Overview({data,st,an,go,openMember}){
       {rounds.map(({i,s,done,r})=>{
         const tot=s["1"]+s["2"];
         const w=done?roundWinner(r,s):null;
-        const tie=done&&s["1"]===s["2"];
         return(
           <div className="rrow" key={i}>
             <div className="rnum">VÒNG {i+1}<small>{fmtShort(dates[i].iso)}</small></div>
@@ -854,7 +853,7 @@ function Overview({data,st,an,go,openMember}){
             </div>
             <div className={"rv"+(w&&w!=="2"?" dim":"")}>{s["2"]}</div>
             {done
-              ?<span className={"badge "+(w==="0"?"b-draw":"b-ok")} title={tie?"Hoà điểm, phân định bằng hiệu số":""}>{w==="0"?"HOÀ":(tie?"HS ":"")+"T"+w}</span>
+              ?<span className={"badge "+(w==="0"?"b-draw":"b-ok")}>{w==="0"?"HOÀ":"T"+w}</span>
               :<span className="badge b-live">LIVE</span>}
           </div>
         );
@@ -862,7 +861,7 @@ function Overview({data,st,an,go,openMember}){
       <div className="legend">
         <span><span className="sw" style={{background:"var(--t1)"}}/>{t1}</span>
         <span><span className="sw" style={{background:"var(--t2)"}}/>{t2}</span>
-        <span>T1/T2 = đội thắng vòng · HS = thắng nhờ hiệu số</span>
+        <span>T1/T2 = đội thắng vòng · HOÀ = bằng điểm</span>
       </div>
     </div>
 
@@ -1059,7 +1058,6 @@ function Entry({data,save,loaded,go}){
       </div>
       <div className="prog"><i style={{width:(r.matches.length?doneN/r.matches.length*100:0)+"%"}}/></div>
       <div className="rmeta"><span><b>{doneN}/{r.matches.length}</b> trận xong</span><span>Hiệu số <b>{sgn(diff)}</b> cho {data.teams["1"].name}</span></div>
-      {s["1"]===s["2"]&&doneN>0&&<div className="rmeta" style={{color:"var(--warn)",fontWeight:700}}>Đang hoà điểm vòng → phân định bằng hiệu số</div>}
     </div>
 
     {order.map((mi,k)=>(
