@@ -338,6 +338,8 @@ button.hlc{font:inherit;color:inherit}
 .mhead.final .mtime2{color:var(--brown)}
 .mhead.final .iconbtn{color:var(--brown)}
 
+.picked .cnt{display:inline-block;margin-right:6px;padding:1px 7px;border-radius:4px;background:var(--goldl);color:var(--gold2);font-family:var(--disp);font-size:11px;font-weight:700}
+
 /* ANALYTICS */
 .plist .pr{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font:inherit;color:inherit}
 .plist .pr:first-child{border-top:0}
@@ -589,7 +591,7 @@ function analyze(data){
     if(!big||Math.abs(sa-sb)>big.margin)big={margin:Math.abs(sa-sb),ri,mi,m,w};
     [["1",m.a,m.b,sa,sb],["2",m.b,m.a,sb,sa]].forEach(([t,mine,theirs,my,th])=>{
       const won=w===t;
-      if(mine.length>=2){
+      if(mine.length===2){
         const names=[...mine].sort(),k=names.join(" & ");
         pairs[k]=pairs[k]||{names,team:t,p:0,w:0};pairs[k].p++;if(won)pairs[k].w++;
       }
@@ -878,13 +880,13 @@ function Overview({data,st,an,go,openMember}){
 }
 
 // ─── ENTRY ───────────────────────────────────────────────────────────────────
-function Picker({team,t,sel,onChange,rank}){
+function Picker({team,t,sel,onChange,rank,max=2}){
   const [all,setAll]=useState(!rank);
   const ms=[...team.members].sort((a,b)=>a.rank.localeCompare(b.rank))
     .filter(m=>all||m.rank===rank||sel.includes(m.name));
   const tog=n=>{
     if(sel.includes(n))onChange(sel.filter(x=>x!==n));
-    else onChange(sel.length>=2?[sel[1],n]:[...sel,n]);
+    else onChange(sel.length>=max?[...sel.slice(1),n]:[...sel,n]);
   };
   return(
     <div className="chips" style={{"--tc":TEAM_HEX[t]}}>
@@ -902,6 +904,7 @@ function Picker({team,t,sel,onChange,rank}){
 function MatchCard({m,mi,ri,data,save,isNext,onDelete,onScoreBlur}){
   const w=winner(m);
   const [open,setOpen]=useState(!w);
+  const fin=isFinal(m); // Final Battle: đánh xoay vòng, chọn bao nhiêu người cũng được
   const [editName,setEditName]=useState(false); // ô sửa tên trận chỉ hiện khi bấm ✏️
   const [label,setLabel]=useState(m.label);
   useEffect(()=>setLabel(m.label),[m.label]);
@@ -918,8 +921,10 @@ function MatchCard({m,mi,ri,data,save,isNext,onDelete,onScoreBlur}){
           <span>{data.teams[t].name}</span>
           {won&&<span className="plus">+{matchPts(data.config,m)}</span>}
         </div>
-        <div className={"picked"+(m[key].length?"":" none")}>{m[key].length?m[key].join(" & "):"Chọn người đánh"}</div>
-        {open&&<Picker team={data.teams[t]} t={t} sel={m[key]} rank={null} onChange={v=>save([...base,key],v)}/>}
+        <div className={"picked"+(m[key].length?"":" none")}>
+          {m[key].length?(fin?<><span className="cnt">{m[key].length} người</span>{m[key].join(", ")}</>:m[key].join(" & ")):(fin?"Chọn tất cả người tham gia":"Chọn người đánh")}
+        </div>
+        {open&&<Picker team={data.teams[t]} t={t} sel={m[key]} rank={null} max={fin?99:2} onChange={v=>save([...base,key],v)}/>}
       </div>
     );
   };
