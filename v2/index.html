@@ -873,6 +873,7 @@ function Picker({team,t,sel,onChange,rank}){
 function MatchCard({m,mi,ri,data,save,isNext,onDelete,onScoreBlur}){
   const w=winner(m);
   const [open,setOpen]=useState(!w);
+  const [editName,setEditName]=useState(false); // ô sửa tên trận chỉ hiện khi bấm ✏️
   const [label,setLabel]=useState(m.label);
   useEffect(()=>setLabel(m.label),[m.label]);
   const base=["rounds",ri,"matches",mi];
@@ -902,10 +903,10 @@ function MatchCard({m,mi,ri,data,save,isNext,onDelete,onScoreBlur}){
         {courtOf(m.label)&&<span className={"court c"+courtOf(m.label)}>Sân {courtOf(m.label)}</span>}
         {timeOf(m.label)&&<span className="mtime2">{timeOf(m.label)}</span>}
         {w?<span className="sdot ok" title="Đã xong">✓</span>:isNext?<span className="sdot run" title="Đang đấu"/>:null}
-        <button className="iconbtn" aria-label={open?"Thu gọn":"Đổi người"} title={open?"Thu gọn":"Đổi người"} onClick={()=>setOpen(!open)}>{open?<IcUp/>:<IcPen/>}</button>
+        <button className="iconbtn" aria-label={open?"Thu gọn":"Đổi người"} title={open?"Thu gọn":"Đổi người"} onClick={()=>{setEditName(!open);setOpen(!open);}}>{open?<IcUp/>:<IcPen/>}</button>
         <button className="iconbtn" aria-label="Xoá trận" onClick={onDelete}><IcTrash/></button>
       </div>
-      {open&&<div className="lblrow">
+      {open&&editName&&<div className="lblrow">
         <input className="field" value={label} placeholder="Tên trận · Sân 1 · 18:30"
           onChange={e=>setLabel(e.target.value)}
           onBlur={()=>{if(label!==m.label)save([...base,"label"],label);}}/>
