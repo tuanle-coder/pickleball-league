@@ -306,6 +306,15 @@ button.hlc{font:inherit;color:inherit}
 .donesep{display:flex;align-items:center;gap:10px;margin:16px 2px 10px;font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--good)}
 .donesep::before,.donesep::after{content:"";flex:1;height:1px;background:var(--line2)}
 
+/* sân thi đấu */
+.mtitle2{flex:1;min-width:0;font-weight:700;font-size:15px;color:var(--brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:4px}
+.mhead.alt .mtitle2{color:#f6ebd3}
+.mtime2{font-family:var(--disp);font-size:13px;font-weight:700;color:var(--gold2);white-space:nowrap}
+.mhead.alt .mtime2{color:#e6cf98}
+.court{font-family:var(--disp);font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:3px 7px;border-radius:4px;white-space:nowrap;border:1px solid var(--line2);background:#fff;color:var(--ink2)}
+.court.c2{background:#2f855a;border-color:#2f855a;color:#fff}
+.lblrow{padding:10px 12px;border-bottom:1px solid var(--line);background:var(--card2)}
+
 /* ANALYTICS */
 .plist .pr{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font:inherit;color:inherit}
 .plist .pr:first-child{border-top:0}
@@ -458,7 +467,12 @@ function setIn(obj,path,value){
 // Tên trận có thể kèm giờ: "Đôi Hạng A · 18:30"
 const TIME_RE=/\s*·?\s*(\d{1,2}:\d{2})\s*$/;
 function timeOf(label){const m=(label||"").match(TIME_RE);return m?m[1]:"";}
-function cleanLabel(label){return(label||"").replace(TIME_RE,"").trim()||"Trận";}
+const COURT_RE=/\s*·?\s*Sân\s*(\d+)\s*/i;
+function courtOf(label){const m=(label||"").match(COURT_RE);return m?m[1]:"";}
+function cleanLabel(label){return(label||"").replace(TIME_RE,"").replace(COURT_RE," ").replace(/\s*·\s*$/,"").trim()||"Trận";}
+// Tên ngắn cho thanh tiêu đề trận trên điện thoại
+function shortLabel(label){const c=cleanLabel(label),l=c.toLowerCase();
+  if(/hỗn\s*hợp/.test(l))return"Hỗn hợp";if(/hạng\s*a\b/.test(l))return"Hạng A";if(/hạng\s*b\b/.test(l))return"Hạng B";return c;}
 function rankOfLabel(label){const s=(label||"").toLowerCase();if(/hạng\s*a\b/.test(s)&&!/hạng\s*b\b/.test(s))return"A";if(/hạng\s*b\b/.test(s)&&!/hạng\s*a\b/.test(s))return"B";return null;}
 function initials(n){const p=n.trim().split(/\s+/);return((p.length>1?p[p.length-2][0]:"")+p[p.length-1][0]).toUpperCase();}
 const pctTxt=v=>v==null?"–":Math.round(v*100)+"%";
@@ -766,7 +780,7 @@ function Overview({data,st,an,go,openMember}){
     </div>}
 
     {nx&&!noMembers&&<div className="card next">
-      <div className="ch"><span className="eyebrow">▶ Trận tiếp theo</span><span className="mono muted" style={{fontSize:11}}>{fmtShort(dates[nx.ri].iso)?fmtShort(dates[nx.ri].iso)+" · ":""}V{nx.ri+1} · #{nx.mi+1}{timeOf(nx.m.label)?" · "+timeOf(nx.m.label):""}</span></div>
+      <div className="ch"><span className="eyebrow">▶ Trận tiếp theo</span><span className="mono muted" style={{fontSize:11}}>{fmtShort(dates[nx.ri].iso)?fmtShort(dates[nx.ri].iso)+" · ":""}V{nx.ri+1} · #{nx.mi+1}{courtOf(nx.m.label)?" · Sân "+courtOf(nx.m.label):""}{timeOf(nx.m.label)?" · "+timeOf(nx.m.label):""}</span></div>
       <div style={{fontWeight:800,fontSize:15,marginBottom:8}}>{cleanLabel(nx.m.label)}</div>
       <div className="vsrow">
         <div className="pr" style={{color:"var(--t1)"}}>{nx.m.a.length?nx.m.a.join(" & "):"Chưa chọn"}</div>
@@ -884,13 +898,18 @@ function MatchCard({m,mi,ri,data,save,isNext,onDelete,onScoreBlur}){
     <div className={"match"+(isNext?" is-next":"")}>
       <div className={"mhead"+(mi%2?" alt":"")}>
         <span className="mno">Trận {mi+1}</span>
-        <input className="mlabel" value={label} placeholder="Tên trận"
-          onChange={e=>setLabel(e.target.value)}
-          onBlur={()=>{if(label!==m.label)save([...base,"label"],label);}}/>
+        <span className="mtitle2">{shortLabel(m.label)}</span>
+        {courtOf(m.label)&&<span className={"court c"+courtOf(m.label)}>Sân {courtOf(m.label)}</span>}
+        {timeOf(m.label)&&<span className="mtime2">{timeOf(m.label)}</span>}
         {w?<span className="sdot ok" title="Đã xong">✓</span>:isNext?<span className="sdot run" title="Đang đấu"/>:null}
         <button className="iconbtn" aria-label={open?"Thu gọn":"Đổi người"} title={open?"Thu gọn":"Đổi người"} onClick={()=>setOpen(!open)}>{open?<IcUp/>:<IcPen/>}</button>
         <button className="iconbtn" aria-label="Xoá trận" onClick={onDelete}><IcTrash/></button>
       </div>
+      {open&&<div className="lblrow">
+        <input className="field" value={label} placeholder="Tên trận · Sân 1 · 18:30"
+          onChange={e=>setLabel(e.target.value)}
+          onBlur={()=>{if(label!==m.label)save([...base,"label"],label);}}/>
+      </div>}
       <div className="cols">{col("1")}{col("2")}</div>
       <div className="score">
         <input type="number" inputMode="numeric" min="0" value={m.sa} placeholder="0" className={w==="1"?"w":""} style={{"--tc":TEAM_HEX["1"]}}
@@ -939,6 +958,8 @@ function Entry({data,save,loaded,go}){
   const s={"1":0,"2":0};r.matches.forEach(m=>{const w=winner(m);if(w)s[w]+=P;});
   const doneN=r.matches.filter(m=>winner(m)).length;
   const nextI=r.matches.findIndex(m=>!winner(m));
+  const nextT=nextI>=0?timeOf(r.matches[nextI].label):"";
+  const isNextM=mi=>!winner(r.matches[mi])&&(mi===nextI||(nextT!==""&&timeOf(r.matches[mi].label)===nextT));
   const noMembers=!data.teams["1"].members.length||!data.teams["2"].members.length;
   const status=isDone(r)?["b-ok","HOÀN THÀNH"]:hasScore(r)?["b-live","ĐANG ĐẤU"]:["b-idle","CHƯA ĐẤU"];
   const diff=roundDiff(r);
@@ -1005,7 +1026,7 @@ function Entry({data,save,loaded,go}){
       <React.Fragment key={idx+"-"+mi}>
         {k===firstDone&&k>0&&<div className="donesep"><span>Đã xong · {order.length-k} trận</span></div>}
         <MatchCard m={r.matches[mi]} mi={mi} ri={idx} data={data} save={save}
-          isNext={mi===nextI} onDelete={()=>delMatch(mi)} onScoreBlur={resort}/>
+          isNext={isNextM(mi)} onDelete={()=>delMatch(mi)} onScoreBlur={resort}/>
       </React.Fragment>
     ))}
     <button className="btn ghost block" onClick={addMatch}>+ Thêm trận vào vòng {idx+1}</button>
