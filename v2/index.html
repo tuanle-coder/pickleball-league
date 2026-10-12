@@ -475,7 +475,7 @@ function normalize(d){
     })),
   }));
   return{
-    config:{ptsWin:Number(cfg.ptsWin)||3,template:template.length?template:DEFAULT_TEMPLATE,startDate:cfg.startDate||DEFAULT_START},
+    config:{ptsWin:Number(cfg.ptsWin)||3,finalPts:Number(cfg.finalPts)||2,template:template.length?template:DEFAULT_TEMPLATE,startDate:cfg.startDate||DEFAULT_START},
     teams,rounds,
   };
 }
@@ -495,7 +495,7 @@ function courtOf(label){const m=(label||"").match(COURT_RE);return m?m[1]:"";}
 function cleanLabel(label){return(label||"").replace(TIME_RE,"").replace(COURT_RE," ").replace(/\s*·\s*$/,"").trim()||"Trận";}
 // Tên ngắn cho thanh tiêu đề trận trên điện thoại
 function shortLabel(label){const c=cleanLabel(label),l=c.toLowerCase();
-  if(/final/.test(l))return"🏆 Final Battle";
+  if(/final/.test(l))return"Final Battle";
   if(/hỗn\s*hợp/.test(l))return"Hỗn hợp";if(/hạng\s*a\b/.test(l))return"Hạng A";if(/hạng\s*b\b/.test(l))return"Hạng B";return c;}
 function rankOfLabel(label){const s=(label||"").toLowerCase();if(/hạng\s*a\b/.test(s)&&!/hạng\s*b\b/.test(s))return"A";if(/hạng\s*b\b/.test(s)&&!/hạng\s*a\b/.test(s))return"B";return null;}
 function initials(n){const p=n.trim().split(/\s+/);return((p.length>1?p[p.length-2][0]:"")+p[p.length-1][0]).toUpperCase();}
@@ -545,6 +545,10 @@ function setRoundDate(data,save,i,v){
 }
 const openPicker=e=>{try{e.currentTarget.showPicker();}catch(_){}};
 
+// Điểm của 1 trận: Final Battle tính riêng (mặc định 2), trận thường theo ptsWin
+function isFinal(m){return/final/i.test(m.label||"");}
+function matchPts(cfg,m){return isFinal(m)?cfg.finalPts:cfg.ptsWin;}
+
 function computeStats(data){
   const P=data.config.ptsWin;
   const total={"1":0,"2":0},wins={"1":0,"2":0};
@@ -554,7 +558,8 @@ function computeStats(data){
     const s={"1":0,"2":0};
     r.matches.forEach(m=>{
       const w=winner(m);if(!w)return;
-      s[w]+=P;total[w]+=P;wins[w]++;played++;
+      const mp=matchPts(data.config,m);
+      s[w]+=mp;total[w]+=mp;wins[w]++;played++;
       const L=cleanLabel(m.label);
       byLabel[L]=byLabel[L]||{"1":0,"2":0};byLabel[L][w]++;
     });
@@ -590,7 +595,7 @@ function analyze(data){
       }
       mine.forEach(n=>{
         const x=get(n,t);
-        x.games.push({ri,mi,label:m.label,won,my,th,partners:mine.filter(y=>y!==n),opps:theirs});
+        x.games.push({ri,mi,label:m.label,won,my,th,pts:matchPts(data.config,m),partners:mine.filter(y=>y!==n),opps:theirs});
         mine.forEach(y=>{if(y===n)return;const q=x.partners[y]=x.partners[y]||{p:0,w:0};q.p++;if(won)q.w++;});
         theirs.forEach(y=>{const q=x.opps[y]=x.opps[y]||{p:0,w:0};q.p++;if(won)q.w++;});
       });
@@ -609,7 +614,7 @@ function analyze(data){
     x.streak=g.length?{won:g[g.length-1].won,n:s}:null;
     x.form=g.slice(-5).map(y=>y.won);
     x.formW=x.form.filter(Boolean).length;
-    x.pts=x.w*P;
+    x.pts=g.reduce((t,y)=>t+(y.won?y.pts:0),0);
   });
   const rankAvg={};
   ["A","B"].forEach(r=>{
@@ -826,7 +831,7 @@ function Overview({data,st,an,go,openMember}){
     })}
 
     <div className="card">
-      <div className="ch"><h2>Điểm từng vòng</h2><span className="hint">Thắng 1 trận = {st.P} điểm</span></div>
+      <div className="ch"><h2>Điểm từng vòng</h2><span className="hint">Thắng 1 trận = {st.P} đ · Final Battle = {data.config.finalPts} đ</span></div>
       {rounds.length===0&&<div className="empty">Chưa có vòng nào có kết quả</div>}
       {rounds.map(({i,s,done,r})=>{
         const tot=s["1"]+s["2"];
@@ -911,7 +916,7 @@ function MatchCard({m,mi,ri,data,save,isNext,onDelete,onScoreBlur}){
       <div className={"col"+(won?" won":"")+(w&&!won?" lost":"")} style={{"--tc":TEAM_HEX[t],"--tcl":TEAM_LIGHT[t]}}>
         <div className="tn">
           <span>{data.teams[t].name}</span>
-          {won&&<span className="plus">+{P}</span>}
+          {won&&<span className="plus">+{matchPts(data.config,m)}</span>}
         </div>
         <div className={"picked"+(m[key].length?"":" none")}>{m[key].length?m[key].join(" & "):"Chọn người đánh"}</div>
         {open&&<Picker team={data.teams[t]} t={t} sel={m[key]} rank={null} onChange={v=>save([...base,key],v)}/>}
@@ -922,7 +927,7 @@ function MatchCard({m,mi,ri,data,save,isNext,onDelete,onScoreBlur}){
   return(
     <div className={"match"+(isNext?" is-next":"")}>
       <div className={"mhead"+(/final/i.test(m.label)?" final":mi%2?" alt":"")}>
-        <span className="mno">Trận {mi+1}</span>
+        <span className="mno">{isFinal(m)?"🏆":"Trận "+(mi+1)}</span>
         <span className="mtitle2">{shortLabel(m.label)}</span>
         {courtOf(m.label)&&<span className={"court c"+courtOf(m.label)}>Sân {courtOf(m.label)}</span>}
         {timeOf(m.label)&&<span className="mtime2">{timeOf(m.label)}</span>}
@@ -980,7 +985,7 @@ function Entry({data,save,loaded,go}){
   const idx=Math.min(ri,data.rounds.length-1);
   const r=data.rounds[idx];
   const P=data.config.ptsWin;
-  const s={"1":0,"2":0};r.matches.forEach(m=>{const w=winner(m);if(w)s[w]+=P;});
+  const s={"1":0,"2":0};r.matches.forEach(m=>{const w=winner(m);if(w)s[w]+=matchPts(data.config,m);});
   const doneN=r.matches.filter(m=>winner(m)).length;
   const nextI=r.matches.findIndex(m=>!winner(m));
   const nextT=nextI>=0?timeOf(r.matches[nextI].label):"";
@@ -1346,6 +1351,9 @@ function Settings({data,save}){
   const fileRef=useRef(null);
   const tp=data.config.template;
 
+  const [fpts,setFpts]=useState(String(data.config.finalPts));
+  useEffect(()=>setFpts(String(data.config.finalPts)),[data.config.finalPts]);
+  const applyFpts=()=>{const n=parseInt(fpts);if(n>0&&n!==data.config.finalPts)save(["config","finalPts"],n);else setFpts(String(data.config.finalPts));};
   const applyPts=()=>{const n=parseInt(pts);if(n>0&&n!==data.config.ptsWin)save(["config","ptsWin"],n);else setPts(String(data.config.ptsWin));};
   const applyRounds=()=>{
     const n=Math.max(1,Math.min(60,parseInt(nr)||0));
@@ -1402,6 +1410,10 @@ function Settings({data,save}){
       <div className="set">
         <div><div className="t">Điểm mỗi trận thắng</div><div className="d">Cộng cho đội thắng trận</div></div>
         <input className="field num" type="number" inputMode="numeric" value={pts} onChange={e=>setPts(e.target.value)} onBlur={applyPts}/>
+      </div>
+      <div className="set">
+        <div><div className="t">Điểm thắng Final Battle</div><div className="d">Cộng cho đội thắng trận Final Battle của vòng</div></div>
+        <input className="field num" type="number" inputMode="numeric" value={fpts} onChange={e=>setFpts(e.target.value)} onBlur={applyFpts}/>
       </div>
       <div className="set">
         <div><div className="t">Số vòng đấu</div><div className="d">Hiện có {data.rounds.length} vòng</div></div>
