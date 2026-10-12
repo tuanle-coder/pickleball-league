@@ -515,7 +515,8 @@ function isDone(r){return r.matches.length>0&&r.matches.every(m=>winner(m)!==nul
 function hasScore(r){return r.matches.some(m=>m.sa!==""||m.sb!=="");}
 function hasData(r){return r.matches.some(m=>m.sa!==""||m.sb!==""||m.a.length||m.b.length);}
 // Hiệu số điểm của vòng (tổng điểm bóng Team 1 − Team 2), dùng để phân định khi hoà điểm vòng
-function roundDiff(r){return r.matches.reduce((d,m)=>winner(m)?d+Number(m.sa)-Number(m.sb):d,0);}
+// Final Battle chỉ tính thắng/thua & điểm cộng, không tính tỉ số vào hiệu số
+function roundDiff(r){return r.matches.reduce((d,m)=>winner(m)&&!isFinal(m)?d+Number(m.sa)-Number(m.sb):d,0);}
 function roundWinner(r,s){
   if(s["1"]!==s["2"])return s["1"]>s["2"]?"1":"2";
   const d=roundDiff(r);
@@ -588,7 +589,8 @@ function analyze(data){
   data.rounds.forEach((r,ri)=>r.matches.forEach((m,mi)=>{
     const w=winner(m);if(!w)return;
     const sa=Number(m.sa),sb=Number(m.sb);
-    if(!big||Math.abs(sa-sb)>big.margin)big={margin:Math.abs(sa-sb),ri,mi,m,w};
+    const fin=isFinal(m);
+    if(!fin&&(!big||Math.abs(sa-sb)>big.margin))big={margin:Math.abs(sa-sb),ri,mi,m,w};
     [["1",m.a,m.b,sa,sb],["2",m.b,m.a,sb,sa]].forEach(([t,mine,theirs,my,th])=>{
       const won=w===t;
       if(mine.length===2){
@@ -597,7 +599,8 @@ function analyze(data){
       }
       mine.forEach(n=>{
         const x=get(n,t);
-        x.games.push({ri,mi,label:m.label,won,my,th,pts:matchPts(data.config,m),partners:mine.filter(y=>y!==n),opps:theirs});
+        x.games.push({ri,mi,label:m.label,won,my,th,fin,pts:matchPts(data.config,m),partners:mine.filter(y=>y!==n),opps:theirs});
+        if(fin)return; // Final Battle đánh xoay vòng: không tính vào thống kê đồng đội/đối thủ
         mine.forEach(y=>{if(y===n)return;const q=x.partners[y]=x.partners[y]||{p:0,w:0};q.p++;if(won)q.w++;});
         theirs.forEach(y=>{const q=x.opps[y]=x.opps[y]||{p:0,w:0};q.p++;if(won)q.w++;});
       });
@@ -608,10 +611,12 @@ function analyze(data){
     const g=x.games;
     x.p=g.length;x.w=g.filter(y=>y.won).length;x.l=x.p-x.w;
     x.pct=x.p?x.w/x.p:null;
-    x.pf=g.reduce((s,y)=>s+y.my,0);x.pa=g.reduce((s,y)=>s+y.th,0);x.diff=x.pf-x.pa;
-    x.avgF=x.p?x.pf/x.p:0;x.avgA=x.p?x.pa/x.p:0;
-    x.closeW=g.filter(y=>y.won&&y.my-y.th<=2).length;
-    x.closeL=g.filter(y=>!y.won&&y.th-y.my<=2).length;
+    // các chỉ số theo tỉ số bóng chỉ tính trận thường (bỏ Final Battle)
+    const gs=g.filter(y=>!y.fin);x.ps=gs.length;
+    x.pf=gs.reduce((s,y)=>s+y.my,0);x.pa=gs.reduce((s,y)=>s+y.th,0);x.diff=x.pf-x.pa;
+    x.avgF=x.ps?x.pf/x.ps:0;x.avgA=x.ps?x.pa/x.ps:0;
+    x.closeW=gs.filter(y=>y.won&&y.my-y.th<=2).length;
+    x.closeL=gs.filter(y=>!y.won&&y.th-y.my<=2).length;
     let s=0;for(let i=g.length-1;i>=0&&g[i].won===g[g.length-1].won;i--)s++;
     x.streak=g.length?{won:g[g.length-1].won,n:s}:null;
     x.form=g.slice(-5).map(y=>y.won);
@@ -666,8 +671,8 @@ function insights(x,an){
   if(x.closeL>=2&&x.closeL>x.closeW)add("warn","⏱️",`Thua sát nút <b>${x.closeL} trận</b> (cách ≤2 điểm) — tập trung giữ tâm lý ở các điểm cuối.`);
   else if(x.closeW>=2&&x.closeW>x.closeL)add("good","🧠",`Bản lĩnh ở trận sát nút: thắng <b>${x.closeW}</b>, thua ${x.closeL} trận cách ≤2 điểm.`);
 
-  if(x.p>=3&&x.pct<0.5&&x.avgA>=9)add("info","🏓",`Đối thủ ghi trung bình <b>${x.avgA.toFixed(1)} điểm/trận</b> — cải thiện giao bóng & trả giao để hạn chế điểm mất.`);
-  if(x.p>=3&&x.diff>=x.p*4)add("good","🚀",`Thắng áp đảo: hiệu số trung bình <b>${sgn(+(x.diff/x.p).toFixed(1))} điểm/trận</b>.`);
+  if(x.ps>=3&&x.pct<0.5&&x.avgA>=9)add("info","🏓",`Đối thủ ghi trung bình <b>${x.avgA.toFixed(1)} điểm/trận</b> — cải thiện giao bóng & trả giao để hạn chế điểm mất.`);
+  if(x.ps>=3&&x.diff>=x.ps*4)add("good","🚀",`Thắng áp đảo: hiệu số trung bình <b>${sgn(+(x.diff/x.ps).toFixed(1))} điểm/trận</b>.`);
   if(out.length===0||(out.length===1&&out[0].tone==="info"&&x.p>=3))add("info","✅",`Phong độ ổn định quanh mức ${pctTxt(x.pct)} — chưa có điểm bất thường cần lưu ý.`);
   return out;
 }
@@ -1135,7 +1140,7 @@ function Ring({v}){
 
 // Biểu đồ phân kỳ: mỗi cột là 1 trận, cao = cách biệt điểm (lên = thắng, xuống = thua)
 function MarginChart({x,data}){
-  const g=x.games;
+  const g=x.games.filter(y=>!y.fin); // Final Battle không vẽ vào biểu đồ cách biệt
   const [sel,setSel]=useState(g.length-1);
   useEffect(()=>setSel(g.length-1),[g.length]);
   const W=320,H=150,L=28,R=6,T=10,B=20;
@@ -1239,8 +1244,8 @@ function MemberSheet({name,an,data,onClose}){
             <div className="kg"><b>{sgn(x.diff)}</b><span>Hiệu số</span></div>
             <div className="kg"><b>{x.pts}</b><span>Điểm góp đội</span></div>
             <div className="kg"><b>{x.p}</b><span>Trận đã đấu</span></div>
-            <div className="kg"><b>{x.p?x.avgF.toFixed(1):"–"}</b><span>Ghi TB/trận</span></div>
-            <div className="kg"><b>{x.p?x.avgA.toFixed(1):"–"}</b><span>Mất TB/trận</span></div>
+            <div className="kg"><b>{x.ps?x.avgF.toFixed(1):"–"}</b><span>Ghi TB/trận</span></div>
+            <div className="kg"><b>{x.ps?x.avgA.toFixed(1):"–"}</b><span>Mất TB/trận</span></div>
             <div className="kg"><b>{x.closeW}-{x.closeL}</b><span>Sát nút T-B</span></div>
           </div>
         </div>
@@ -1254,7 +1259,7 @@ function MemberSheet({name,an,data,onClose}){
           </div>
         </div>
 
-        {x.p>0&&<div className="card">
+        {x.ps>0&&<div className="card">
           <div className="ch"><h2>Diễn biến từng trận</h2><span className="hint">Chạm cột để xem</span></div>
           <MarginChart x={x} data={data}/>
         </div>}
